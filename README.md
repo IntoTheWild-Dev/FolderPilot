@@ -1,6 +1,40 @@
 # FolderPilot
 
-Electron-based folder and file management application for Mac and Windows.
+Professional folder and file management application for Mac and Windows.
+
+---
+
+## 📥 **DOWNLOAD FOLDERPILOT**
+
+### **For Mac Users**
+
+**Apple Silicon (M1/M2/M3/M4):**
+➡️ **[Download for Mac (Apple Silicon)](https://github.com/IntoTheWild-Dev/FolderPilot/releases/download/v1.0.0/FolderPilot-1.0.0-arm64.dmg)**
+
+**Intel Macs:**
+➡️ **[Download for Mac (Intel)](https://github.com/IntoTheWild-Dev/FolderPilot/releases/download/v1.0.0/FolderPilot-1.0.0.dmg)**
+
+### **For Windows Users**
+
+➡️ **[Download for Windows](https://github.com/IntoTheWild-Dev/FolderPilot/releases/download/v1.0.0/FolderPilot-Setup-1.0.0.exe)**
+
+---
+
+## Installation
+
+**Mac:**
+1. Download the appropriate DMG file for your Mac
+2. Open the DMG file
+3. Drag FolderPilot to your Applications folder
+4. Launch from Applications
+
+**Windows:**
+1. Download the EXE installer
+2. Run the installer
+3. Follow the installation wizard
+4. Launch from Start menu
+
+---
 
 ## Features
 
@@ -22,25 +56,12 @@ The app includes automatic update functionality. When users have the app install
 
 ### How Auto-Update Works
 
-1. **For Users**: When they open the app, it checks for updates automatically
-2. **Update Available**: They get a notification asking if they want to download
-3. **Download**: The update downloads in the background
-4. **Install**: When complete, they can restart to install the new version
+1. When users open the app, it checks for updates automatically
+2. Users get a notification asking if they want to download
+3. The update downloads in the background
+4. When complete, users can restart to install the new version
 
-## Distribution
-
-Users can download the latest version from:
-https://github.com/IntoTheWild-Dev/FolderPilot/releases
-
-### For Mac Users
-- Download the `.dmg` file
-- Drag FolderPilot to Applications folder
-- Updates will be automatic going forward
-
-### For Windows Users
-- Download the `.exe` installer
-- Run the installer
-- Updates will be automatic going forward
+Updates are seamless and require just one click.
 
 ## License
 

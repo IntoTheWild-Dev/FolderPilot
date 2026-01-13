@@ -30,7 +30,9 @@
       "Bash(gh repo edit:*)",
       "Bash(git tag:*)",
       "Bash(gh run list:*)",
-      "Bash(gh run view:*)"
+      "Bash(gh run view:*)",
+      "Bash(gh release view:*)",
+      "Bash(gh release edit:*)"
     ],
     "deny": [],
     "ask": [],
