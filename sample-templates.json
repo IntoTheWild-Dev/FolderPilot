@@ -1,0 +1,92 @@
+[
+  {
+    "id": 1692345600000,
+    "name": "European Languages",
+    "description": "Standard European language codes for international projects",
+    "type": "folder_template",
+    "folders": [
+      "01_LAT",
+      "02_BG", 
+      "03_CS",
+      "03_CS-EN",
+      "04_HR",
+      "05_HU",
+      "06_HU-EN",
+      "06_MK",
+      "06_MK-EN",
+      "07_PL",
+      "08_SR",
+      "08_SR-EN",
+      "09_SK",
+      "10_SL"
+    ],
+    "createdAt": "2025-08-19T10:00:00.000Z",
+    "updatedAt": "2025-08-19T10:00:00.000Z",
+    "isEditable": true
+  },
+  {
+    "id": 1692345660000,
+    "name": "Slavic Languages",
+    "description": "Slavic language subset for Eastern European markets",
+    "type": "folder_template",
+    "folders": [
+      "01_BG_Bulgarian",
+      "02_CS_Czech", 
+      "03_HR_Croatian",
+      "04_MK_Macedonian",
+      "05_PL_Polish",
+      "06_SK_Slovak",
+      "07_SL_Slovenian",
+      "08_SR_Serbian"
+    ],
+    "createdAt": "2025-08-19T10:01:00.000Z",
+    "updatedAt": "2025-08-19T10:01:00.000Z",
+    "isEditable": true
+  },
+  {
+    "id": 1692345720000,
+    "name": "Project Structure",
+    "description": "Standard project folder structure for creative workflows",
+    "type": "folder_template",
+    "folders": [
+      "01_Assets",
+      "02_Working_Files",
+      "03_Exports",
+      "04_Archive",
+      "05_References",
+      "Assets/Images",
+      "Assets/Videos", 
+      "Assets/Audio",
+      "Working_Files/InDesign",
+      "Working_Files/Photoshop",
+      "Working_Files/After_Effects",
+      "Exports/Final",
+      "Exports/Proofs",
+      "Exports/Web"
+    ],
+    "createdAt": "2025-08-19T10:02:00.000Z",
+    "updatedAt": "2025-08-19T10:02:00.000Z",
+    "isEditable": true
+  },
+  {
+    "id": 1692345780000,
+    "name": "Client Deliverables",
+    "description": "Standard deliverable structure for client projects",
+    "type": "folder_template",
+    "folders": [
+      "01_Brief_Requirements",
+      "02_Concepts_Sketches",
+      "03_Design_Development", 
+      "04_Final_Artwork",
+      "05_Production_Files",
+      "06_Documentation",
+      "Final_Artwork/Print_Ready",
+      "Final_Artwork/Digital_Assets",
+      "Production_Files/Source_Files",
+      "Production_Files/Fonts_Used"
+    ],
+    "createdAt": "2025-08-19T10:03:00.000Z",
+    "updatedAt": "2025-08-19T10:03:00.000Z",
+    "isEditable": true
+  }
+]

@@ -1,0 +1,1045 @@
+let selectedFolderPath = null;
+let selectedFilesPath = null;
+let currentFiles = [];
+let renameRules = [];
+let presets = [];
+
+// Initialize the app
+document.addEventListener('DOMContentLoaded', async function() {
+  console.log('DOM loaded');
+  console.log('window.electronAPI available:', !!window.electronAPI);
+  
+  if (window.electronAPI) {
+    console.log('electronAPI methods:', Object.keys(window.electronAPI));
+  } else {
+    console.error('electronAPI is not available!');
+  }
+  
+  // Load presets first, then initialize everything else
+  await loadPresets();
+  
+  initializeEventListeners();
+  initializeUI();
+  
+  console.log('App initialization complete');
+  
+  // Add debug functions to window for testing
+  window.debugButtons = function() {
+    console.log('=== DEBUG BUTTON STATES ===');
+    const previewBtn = document.getElementById('preview-btn');
+    const renameBtn = document.getElementById('rename-btn');
+    
+    console.log('Preview button element:', previewBtn);
+    console.log('Preview button disabled:', previewBtn ? previewBtn.disabled : 'not found');
+    console.log('Rename button element:', renameBtn);
+    console.log('Rename button disabled:', renameBtn ? renameBtn.disabled : 'not found');
+    console.log('selectedFilesPath:', selectedFilesPath);
+    console.log('currentFiles:', currentFiles);
+    console.log('currentFiles length:', currentFiles ? currentFiles.length : 0);
+    
+    updateButtonStates();
+  };
+  
+  window.forceEnableButtons = function() {
+    console.log('Force enabling buttons...');
+    const previewBtn = document.getElementById('preview-btn');
+    const renameBtn = document.getElementById('rename-btn');
+    
+    if (previewBtn) {
+      previewBtn.disabled = false;
+      previewBtn.style.opacity = '1';
+      previewBtn.style.cursor = 'pointer';
+      previewBtn.style.background = '#9C3587';
+      console.log('Preview button force enabled');
+    }
+    
+    if (renameBtn) {
+      renameBtn.disabled = false;
+      renameBtn.style.opacity = '1';
+      renameBtn.style.cursor = 'pointer';
+      renameBtn.style.background = '#9C3587';
+      console.log('Rename button force enabled');
+    }
+  };
+});
+
+function initializeEventListeners() {
+  console.log('Initializing event listeners...');
+  
+  // Use a small delay to ensure DOM is fully ready
+  setTimeout(() => {
+    // Sidebar navigation
+    const sidebarItems = document.querySelectorAll('.sidebar-item');
+    sidebarItems.forEach(function(item) {
+      item.addEventListener('click', function() {
+        switchSection(item.dataset.section);
+      });
+    });
+
+    // Create Folders section
+    const chooseFolderBtn = document.getElementById('choose-location-btn');
+    const createFoldersBtn = document.getElementById('create-folders-btn');
+    
+    console.log('Looking for create folder buttons...');
+    console.log('chooseFolderBtn:', chooseFolderBtn);
+    console.log('createFoldersBtn:', createFoldersBtn);
+    
+    if (chooseFolderBtn) {
+      chooseFolderBtn.addEventListener('click', selectFolderLocation);
+      console.log('✓ Added event listener to choose folder button');
+    } else {
+      console.error('✗ Could not find choose folder button with ID: choose-location-btn');
+    }
+    
+    if (createFoldersBtn) {
+      createFoldersBtn.addEventListener('click', createFolders);
+      console.log('✓ Added event listener to create folders button');
+    } else {
+      console.error('✗ Could not find create folders button with ID: create-folders-btn');
+    }
+
+    // Rename Items section
+    const selectFolderBtn = document.getElementById('select-folder-btn');
+    const addRuleBtn = document.getElementById('add-rule-btn');
+    const previewBtn = document.getElementById('preview-btn');
+    const renameBtn = document.getElementById('rename-btn');
+    
+    console.log('Looking for rename buttons...');
+    console.log('selectFolderBtn:', selectFolderBtn);
+    console.log('addRuleBtn:', addRuleBtn);
+    console.log('previewBtn:', previewBtn);
+    console.log('renameBtn:', renameBtn);
+    
+    if (selectFolderBtn) {
+      selectFolderBtn.addEventListener('click', selectFilesFolder);
+      console.log('✓ Added event listener to select folder button');
+    } else {
+      console.error('✗ Could not find select folder button with ID: select-folder-btn');
+    }
+    
+    if (addRuleBtn) {
+      addRuleBtn.addEventListener('click', addRenameRule);
+      console.log('✓ Added event listener to add rule button');
+    } else {
+      console.error('✗ Could not find add rule button with ID: add-rule-btn');
+    }
+    
+    if (previewBtn) {
+      previewBtn.addEventListener('click', showRenamePreview);
+      console.log('✓ Added event listener to preview button');
+    } else {
+      console.error('✗ Could not find preview button with ID: preview-btn');
+    }
+    
+    if (renameBtn) {
+      renameBtn.addEventListener('click', executeRename);
+      console.log('✓ Added event listener to rename button');
+    } else {
+      console.error('✗ Could not find rename button with ID: rename-btn');
+    }
+
+    // Save Preview as Preset button
+    const savePreviewBtn = document.getElementById('save-preview-preset-btn');
+    if (savePreviewBtn) {
+      savePreviewBtn.addEventListener('click', savePreviewAsPreset);
+      console.log('✓ Added event listener to save preview preset button');
+    } else {
+      console.error('✗ Could not find save preview preset button');
+    }
+
+    console.log('Event listeners initialization complete');
+  }, 500); // Wait 500ms for DOM to be fully ready
+}
+
+function initializeUI() {
+  updateButtonStates();
+  renderPresets();
+  renderQuickPresets();
+  updateRulesSummary();
+}
+
+// SECTION SWITCHING
+function switchSection(sectionName) {
+  // Update sidebar active state
+  document.querySelectorAll('.sidebar-item').forEach(function(item) {
+    item.classList.remove('active');
+  });
+  document.querySelector('[data-section="' + sectionName + '"]').classList.add('active');
+
+  // Update main panel sections
+  document.querySelectorAll('.section').forEach(function(section) {
+    section.classList.remove('active');
+  });
+  document.getElementById(sectionName + '-section').classList.add('active');
+}
+
+// FOLDER CREATION FUNCTIONS
+async function selectFolderLocation() {
+  try {
+    console.log('selectFolderLocation called');
+    
+    if (!window.electronAPI || !window.electronAPI.selectFolder) {
+      showNotification('Electron API not available', 'error');
+      return;
+    }
+    
+    const result = await window.electronAPI.selectFolder();
+    console.log('Folder selection result:', result);
+    
+    if (!result.canceled && result.filePaths && result.filePaths.length > 0) {
+      selectedFolderPath = result.filePaths[0];
+      const chooseFolderBtn = document.getElementById('choose-location-btn');
+      if (chooseFolderBtn) {
+        chooseFolderBtn.textContent = '📁 ' + getShortPath(selectedFolderPath);
+        chooseFolderBtn.style.background = '#E53F71';
+      }
+      updateButtonStates();
+      showNotification('Selected folder: ' + getShortPath(selectedFolderPath), 'success');
+    }
+  } catch (error) {
+    console.error('Error in selectFolderLocation:', error);
+    showNotification('Error selecting folder: ' + error.message, 'error');
+  }
+}
+
+async function createFolders() {
+  console.log('createFolders called');
+  
+  if (!selectedFolderPath) {
+    showNotification('Please select a folder location first', 'warning');
+    return;
+  }
+
+  const textarea = document.querySelector('.panel textarea');
+  if (!textarea) {
+    showNotification('Cannot find folder names input', 'error');
+    return;
+  }
+
+  const folderNames = textarea.value
+    .split('\n')
+    .map(function(name) { return name.trim(); })
+    .filter(function(name) { return name.length > 0; });
+
+  if (folderNames.length === 0) {
+    showNotification('Please enter at least one folder name', 'warning');
+    return;
+  }
+
+  try {
+    if (!window.electronAPI || !window.electronAPI.createFolders) {
+      showNotification('Electron API not available', 'error');
+      return;
+    }
+
+    const createFoldersBtn = document.getElementById('create-folders-btn');
+    if (createFoldersBtn) {
+      createFoldersBtn.textContent = 'Creating...';
+      createFoldersBtn.disabled = true;
+    }
+
+    console.log('Creating folders:', folderNames, 'in:', selectedFolderPath);
+    const result = await window.electronAPI.createFolders(folderNames, selectedFolderPath);
+    console.log('Create folders result:', result);
+    
+    if (result && result.success) {
+      const successCount = result.results.filter(function(r) { return r.success; }).length;
+      const failCount = result.results.filter(function(r) { return !r.success; }).length;
+      
+      if (failCount === 0) {
+        showNotification('Successfully created ' + successCount + ' folders!', 'success');
+        textarea.value = '';
+      } else {
+        showNotification('Created ' + successCount + ' folders, ' + failCount + ' failed', 'warning');
+      }
+    } else {
+      showNotification('Failed to create folders: ' + (result ? result.error : 'Unknown error'), 'error');
+    }
+  } catch (error) {
+    console.error('Error in createFolders:', error);
+    showNotification('Error creating folders: ' + error.message, 'error');
+  } finally {
+    const createFoldersBtn = document.getElementById('create-folders-btn');
+    if (createFoldersBtn) {
+      createFoldersBtn.textContent = 'Create Folders';
+      createFoldersBtn.disabled = false;
+    }
+  }
+}
+
+// FILE RENAMING FUNCTIONS
+async function selectFilesFolder() {
+  console.log('selectFilesFolder function called!');
+  
+  try {
+    if (!window.electronAPI || !window.electronAPI.selectFilesFolder) {
+      console.error('electronAPI.selectFilesFolder not available');
+      showNotification('Electron API not available', 'error');
+      return;
+    }
+    
+    console.log('Calling electronAPI.selectFilesFolder...');
+    const result = await window.electronAPI.selectFilesFolder();
+    console.log('Folder selection result:', result);
+    
+    if (!result.canceled && result.filePaths && result.filePaths.length > 0) {
+      selectedFilesPath = result.filePaths[0];
+      console.log('Selected files path:', selectedFilesPath);
+      
+      const selectFolderBtn = document.getElementById('select-folder-btn');
+      if (selectFolderBtn) {
+        selectFolderBtn.textContent = '📁 ' + getShortPath(selectedFilesPath);
+        selectFolderBtn.style.background = '#4CAF50';
+        console.log('Updated button text and color');
+      }
+      
+      console.log('About to load files from folder...');
+      await loadFilesFromFolder();
+      
+      // Double-check button states after everything is loaded
+      setTimeout(() => {
+        console.log('Final button state check after folder selection...');
+        updateButtonStates();
+      }, 200);
+    } else {
+      console.log('Folder selection was canceled or no path selected');
+    }
+  } catch (error) {
+    console.error('Error in selectFilesFolder:', error);
+    showNotification('Error selecting folder: ' + error.message, 'error');
+  }
+}
+
+async function loadFilesFromFolder() {
+  try {
+    if (!window.electronAPI || !window.electronAPI.getFiles) {
+      showNotification('Electron API not available', 'error');
+      return;
+    }
+    
+    console.log('Loading files from:', selectedFilesPath);
+    const result = await window.electronAPI.getFiles(selectedFilesPath);
+    console.log('getFiles result:', result);
+    
+    if (result && result.success) {
+      currentFiles = result.files;
+      console.log('Loaded files:', currentFiles.length, currentFiles);
+      showNotification('Loaded ' + currentFiles.length + ' items from folder', 'info');
+      
+      // Force update button states after files are loaded
+      setTimeout(() => {
+        updateButtonStates();
+      }, 100);
+    } else {
+      console.error('Error loading files:', result);
+      showNotification('Error loading files: ' + (result ? result.error : 'Unknown error'), 'error');
+      currentFiles = [];
+      updateButtonStates();
+    }
+  } catch (error) {
+    console.error('Error in loadFilesFromFolder:', error);
+    showNotification('Error loading files: ' + error.message, 'error');
+    currentFiles = [];
+    updateButtonStates();
+  }
+}
+
+function addRenameRule() {
+  const inputs = document.querySelectorAll('.form-row input');
+  const rule = {
+    findText: inputs[0].value,
+    replaceWith: inputs[1].value,
+    addPrefix: inputs[2].value,
+    addSuffix: inputs[3].value,
+    startNumbering: inputs[4].value,
+    changeCase: inputs[5].value
+  };
+
+  const hasContent = Object.values(rule).some(function(value) { 
+    return value.trim() !== ''; 
+  });
+  
+  if (!hasContent) {
+    showNotification('Please fill in at least one field to add a rule', 'warning');
+    return;
+  }
+
+  renameRules.push(rule);
+  showNotification('Added rename rule (' + renameRules.length + ' total)', 'success');
+  
+  // Clear inputs
+  inputs.forEach(function(input) {
+    input.value = '';
+  });
+  
+  // Update rules display
+  renderRenameRules();
+  
+  // Hide preview since rules changed
+  document.getElementById('rename-preview').style.display = 'none';
+}
+
+function renderRenameRules() {
+  const container = document.getElementById('rename-rules-list');
+  
+  if (renameRules.length === 0) {
+    container.innerHTML = '';
+    updateRulesSummary();
+    return;
+  }
+  
+  container.innerHTML = '<h4 style="color: #F89F5B; margin-bottom: 10px;">Active Rules:</h4>' +
+    renameRules.map(function(rule, index) {
+      const descriptions = [];
+      if (rule.findText && rule.replaceWith) {
+        descriptions.push('Replace "' + rule.findText + '" with "' + rule.replaceWith + '"');
+      }
+      if (rule.addPrefix) {
+        descriptions.push('Add prefix "' + rule.addPrefix + '"');
+      }
+      if (rule.addSuffix) {
+        descriptions.push('Add suffix "' + rule.addSuffix + '"');
+      }
+      if (rule.startNumbering) {
+        descriptions.push('Number starting at ' + rule.startNumbering);
+      }
+      if (rule.changeCase) {
+        descriptions.push('Change case to ' + rule.changeCase);
+      }
+      
+      const description = descriptions.length > 0 ? descriptions.join(', ') : 'Empty rule';
+      
+      return '<div class="rule-item">' +
+        '<span class="rule-description">' + description + '</span>' +
+        '<button class="rule-remove" onclick="removeRule(' + index + ')">Remove</button>' +
+      '</div>';
+    }).join('');
+    
+  updateRulesSummary();
+}
+
+// Quick Actions Dashboard Functions
+function renderQuickPresets() {
+  const container = document.getElementById('quick-presets');
+  const recentPresets = presets.slice(-3); // Show last 3 presets
+  
+  if (recentPresets.length === 0) {
+    container.innerHTML = '<span style="color: #888; font-size: 12px;">No presets yet</span>';
+    return;
+  }
+  
+  container.innerHTML = recentPresets.map(function(preset) {
+    return '<button class="quick-preset-btn" onclick="quickLoadPreset(' + preset.id + ')">' + 
+      preset.name + '</button>';
+  }).join('');
+}
+
+function updateRulesSummary() {
+  const summaryContainer = document.getElementById('rules-summary');
+  const contentContainer = document.getElementById('rules-summary-content');
+  
+  if (renameRules.length === 0) {
+    summaryContainer.style.display = 'none';
+    return;
+  }
+  
+  summaryContainer.style.display = 'block';
+  const summary = renameRules.length + ' active rule' + (renameRules.length === 1 ? '' : 's') + 
+    ' ready to apply';
+  contentContainer.innerHTML = summary;
+}
+
+function quickLoadPreset(presetId) {
+  console.log('Quick loading preset:', presetId);
+  const preset = presets.find(function(p) { return p.id === presetId; });
+  if (!preset) {
+    showNotification('Preset not found', 'error');
+    return;
+  }
+  
+  // Switch to folders section first
+  switchSection('folders');
+  
+  // Wait a moment for section to switch, then load the preset
+  setTimeout(() => {
+    loadPreset(presetId);
+  }, 100);
+}
+
+function savePreviewAsPreset() {
+  console.log('savePreviewAsPreset called');
+  
+  const presetName = prompt('Enter a name for this preset:');
+  if (!presetName || !presetName.trim()) {
+    showNotification('Please enter a valid preset name', 'warning');
+    return;
+  }
+  
+  // Get current folder names
+  const folderTextarea = document.querySelector('.panel textarea');
+  const folderNames = folderTextarea ? folderTextarea.value : '';
+  
+  // Get current form inputs
+  const inputs = document.querySelectorAll('.form-row input');
+  const currentRule = {
+    findText: inputs[0] ? inputs[0].value : '',
+    replaceWith: inputs[1] ? inputs[1].value : '',
+    addPrefix: inputs[2] ? inputs[2].value : '',
+    addSuffix: inputs[3] ? inputs[3].value : '',
+    startNumbering: inputs[4] ? inputs[4].value : '',
+    changeCase: inputs[5] ? inputs[5].value : ''
+  };
+
+  const preset = {
+    id: Date.now(),
+    name: presetName.trim(),
+    description: 'Saved from preview on ' + new Date().toLocaleDateString(),
+    folderNames: folderNames,
+    renameRules: renameRules.slice(), // Copy current rules
+    currentRule: currentRule,
+    createdAt: new Date().toISOString()
+  };
+
+  console.log('Creating preset:', preset);
+
+  presets.push(preset);
+  savePresets();
+  renderPresets();
+  renderQuickPresets();
+  
+  showNotification('Preset "' + presetName + '" saved from preview!', 'success');
+}
+
+function removeRule(index) {
+  renameRules.splice(index, 1);
+  renderRenameRules();
+  document.getElementById('rename-preview').style.display = 'none';
+  showNotification('Rule removed', 'info');
+}
+
+function showRenamePreview() {
+  console.log('showRenamePreview called');
+  console.log('selectedFilesPath:', selectedFilesPath);
+  console.log('currentFiles:', currentFiles);
+  
+  if (!selectedFilesPath || !currentFiles || currentFiles.length === 0) {
+    showNotification('Please select a folder with files first', 'warning');
+    return;
+  }
+
+  // Get current rule from inputs (if any)
+  const inputs = document.querySelectorAll('.form-row input');
+  const currentRule = {
+    findText: inputs[0].value,
+    replaceWith: inputs[1].value,
+    addPrefix: inputs[2].value,
+    addSuffix: inputs[3].value,
+    startNumbering: inputs[4].value,
+    changeCase: inputs[5].value
+  };
+
+  const hasCurrentContent = Object.values(currentRule).some(function(value) { 
+    return value.trim() !== ''; 
+  });
+  
+  let rulesToApply = renameRules.slice();
+  if (hasCurrentContent) {
+    rulesToApply.push(currentRule);
+  }
+
+  console.log('Rules to apply:', rulesToApply);
+
+  if (rulesToApply.length === 0) {
+    showNotification('Please add at least one rename rule or fill in the form', 'warning');
+    return;
+  }
+
+  const operations = generateRenameOperations(currentFiles, rulesToApply);
+  console.log('Generated operations:', operations);
+  
+  if (operations.length === 0) {
+    showNotification('No files will be renamed with current rules', 'warning');
+    return;
+  }
+
+  renderPreview(operations);
+  document.getElementById('rename-preview').style.display = 'block';
+  showNotification('Preview generated for ' + operations.length + ' files', 'info');
+}
+
+function renderPreview(operations) {
+  const container = document.getElementById('preview-list');
+  
+  container.innerHTML = operations.map(function(op) {
+    return '<div class="preview-item">' +
+      '<span class="preview-old">' + op.oldName + '</span>' +
+      '<span class="preview-arrow">→</span>' +
+      '<span class="preview-new">' + op.newName + '</span>' +
+    '</div>';
+  }).join('');
+}
+
+async function executeRename() {
+  if (!selectedFilesPath || currentFiles.length === 0) {
+    showNotification('Please select a folder with files first', 'warning');
+    return;
+  }
+
+  const inputs = document.querySelectorAll('.form-row input');
+  const currentRule = {
+    findText: inputs[0].value,
+    replaceWith: inputs[1].value,
+    addPrefix: inputs[2].value,
+    addSuffix: inputs[3].value,
+    startNumbering: inputs[4].value,
+    changeCase: inputs[5].value
+  };
+
+  const hasCurrentContent = Object.values(currentRule).some(function(value) { 
+    return value.trim() !== ''; 
+  });
+  
+  let rulesToApply = renameRules.slice();
+  if (hasCurrentContent) {
+    rulesToApply.push(currentRule);
+  }
+
+  if (rulesToApply.length === 0) {
+    showNotification('Please add at least one rename rule', 'warning');
+    return;
+  }
+
+  try {
+    const renameBtn = document.getElementById('rename-btn');
+    renameBtn.textContent = 'Renaming...';
+    renameBtn.disabled = true;
+
+    const operations = generateRenameOperations(currentFiles, rulesToApply);
+    
+    if (operations.length === 0) {
+      showNotification('No files to rename with current rules', 'warning');
+      return;
+    }
+
+    const result = await window.electronAPI.renameFiles(operations, selectedFilesPath);
+    
+    if (result.success) {
+      const successCount = result.results.filter(function(r) { return r.success; }).length;
+      const failCount = result.results.filter(function(r) { return !r.success; }).length;
+      
+      if (failCount === 0) {
+        showNotification('Successfully renamed ' + successCount + ' files!', 'success');
+        renameRules = [];
+        inputs.forEach(function(input) {
+          input.value = '';
+        });
+        renderRenameRules();
+        await loadFilesFromFolder();
+      } else {
+        showNotification('Renamed ' + successCount + ' files, ' + failCount + ' failed', 'warning');
+      }
+    } else {
+      showNotification('Failed to rename files: ' + result.error, 'error');
+    }
+  } catch (error) {
+    showNotification('Error renaming files: ' + error.message, 'error');
+  } finally {
+    const renameBtn = document.getElementById('rename-btn');
+    renameBtn.textContent = 'Rename';
+    renameBtn.disabled = false;
+  }
+}
+
+function generateRenameOperations(files, rules) {
+  const operations = [];
+  let numberingCounter = 1;
+
+  files.forEach(function(file) {
+    if (file.name === '.DS_Store' || file.name.indexOf('.') === 0) {
+      return;
+    }
+
+    let newName = file.name;
+    const extension = getFileExtension(file.name);
+    let nameWithoutExt = getFileNameWithoutExtension(file.name);
+
+    rules.forEach(function(rule) {
+      if (rule.findText && rule.replaceWith !== undefined) {
+        nameWithoutExt = nameWithoutExt.replace(new RegExp(escapeRegExp(rule.findText), 'g'), rule.replaceWith);
+      }
+
+      if (rule.addPrefix) {
+        nameWithoutExt = rule.addPrefix + nameWithoutExt;
+      }
+
+      if (rule.addSuffix) {
+        nameWithoutExt = nameWithoutExt + rule.addSuffix;
+      }
+
+      if (rule.startNumbering) {
+        const startNum = parseInt(rule.startNumbering) || 1;
+        const currentNum = startNum + (numberingCounter - 1);
+        nameWithoutExt = nameWithoutExt + ' ' + currentNum;
+      }
+
+      if (rule.changeCase) {
+        switch (rule.changeCase.toLowerCase()) {
+          case 'upper':
+          case 'uppercase':
+            nameWithoutExt = nameWithoutExt.toUpperCase();
+            break;
+          case 'lower':
+          case 'lowercase':
+            nameWithoutExt = nameWithoutExt.toLowerCase();
+            break;
+          case 'title':
+          case 'titlecase':
+            nameWithoutExt = toTitleCase(nameWithoutExt);
+            break;
+        }
+      }
+    });
+
+    newName = nameWithoutExt + extension;
+
+    if (newName !== file.name) {
+      operations.push({
+        oldPath: file.path,
+        newPath: window.electronAPI.path.join(selectedFilesPath, newName),
+        oldName: file.name,
+        newName: newName
+      });
+    }
+
+    numberingCounter++;
+  });
+
+  return operations;
+}
+
+// PRESETS FUNCTIONALITY
+function saveCurrentAsPreset() {
+  const name = document.getElementById('preset-name').value.trim();
+  if (!name) {
+    showNotification('Please enter a preset name', 'warning');
+    return;
+  }
+
+  const description = document.getElementById('preset-description').value.trim();
+  
+  // Get current folder creation settings
+  const folderNames = document.querySelector('.panel textarea').value;
+  
+  // Get current rename rules
+  const inputs = document.querySelectorAll('.form-row input');
+  const currentRule = {
+    findText: inputs[0].value,
+    replaceWith: inputs[1].value,
+    addPrefix: inputs[2].value,
+    addSuffix: inputs[3].value,
+    startNumbering: inputs[4].value,
+    changeCase: inputs[5].value
+  };
+
+  const preset = {
+    id: Date.now(),
+    name: name,
+    description: description,
+    folderNames: folderNames,
+    renameRules: renameRules.slice(),
+    currentRule: currentRule,
+    createdAt: new Date().toISOString()
+  };
+
+  presets.push(preset);
+  savePresets();
+  renderPresets();
+  renderQuickPresets(); // Update quick actions
+  
+  // Clear form
+  document.getElementById('preset-name').value = '';
+  document.getElementById('preset-description').value = '';
+  
+  showNotification('Preset "' + name + '" saved successfully!', 'success');
+}
+
+function saveCustomPreset() {
+  const name = document.getElementById('preset-name').value.trim();
+  if (!name) {
+    showNotification('Please enter a preset name', 'warning');
+    return;
+  }
+
+  const description = document.getElementById('preset-description').value.trim();
+  
+  const preset = {
+    id: Date.now(),
+    name: name,
+    description: description,
+    folderNames: '',
+    renameRules: [],
+    currentRule: {},
+    createdAt: new Date().toISOString()
+  };
+
+  presets.push(preset);
+  savePresets();
+  renderPresets();
+  renderQuickPresets(); // Update quick actions
+  
+  document.getElementById('preset-name').value = '';
+  document.getElementById('preset-description').value = '';
+  
+  showNotification('Empty preset "' + name + '" created!', 'success');
+}
+
+function loadPreset(presetId) {
+  const preset = presets.find(function(p) { return p.id === presetId; });
+  if (!preset) {
+    showNotification('Preset not found', 'error');
+    return;
+  }
+
+  console.log('Loading preset:', preset);
+
+  // Make sure we're on the folders section
+  switchSection('folders');
+
+  // Load folder names
+  const folderTextarea = document.querySelector('.panel textarea');
+  if (preset.folderNames && folderTextarea) {
+    folderTextarea.value = preset.folderNames;
+    console.log('Loaded folder names:', preset.folderNames);
+  }
+
+  // Load rename rules
+  renameRules = preset.renameRules ? preset.renameRules.slice() : [];
+  console.log('Loaded rename rules:', renameRules);
+  renderRenameRules();
+  
+  // Load current rule into form inputs
+  if (preset.currentRule) {
+    const inputs = document.querySelectorAll('.form-row input');
+    if (inputs.length >= 6) {
+      inputs[0].value = preset.currentRule.findText || '';
+      inputs[1].value = preset.currentRule.replaceWith || '';
+      inputs[2].value = preset.currentRule.addPrefix || '';
+      inputs[3].value = preset.currentRule.addSuffix || '';
+      inputs[4].value = preset.currentRule.startNumbering || '';
+      inputs[5].value = preset.currentRule.changeCase || '';
+      console.log('Loaded current rule into form');
+    }
+  }
+
+  showNotification('Preset "' + preset.name + '" loaded successfully!', 'success');
+}
+
+function deletePreset(presetId) {
+  presets = presets.filter(function(p) { return p.id !== presetId; });
+  savePresets();
+  renderPresets();
+  renderQuickPresets();
+  showNotification('Preset deleted', 'info');
+}
+
+function renderPresets() {
+  const container = document.getElementById('presets-list');
+  
+  if (presets.length === 0) {
+    container.innerHTML = '<div class="empty-state"><div class="icon">📋</div><p>No presets saved yet. Create your first preset above!</p></div>';
+    return;
+  }
+
+  container.innerHTML = presets.map(function(preset) {
+    const createdDate = new Date(preset.createdAt).toLocaleDateString();
+    const folderCount = preset.folderNames ? preset.folderNames.split('\n').filter(function(name) { return name.trim(); }).length : 0;
+    const ruleCount = preset.renameRules.length;
+    
+    return '<div class="preset-item">' +
+      '<h4>' + preset.name + '</h4>' +
+      '<p>' + (preset.description || 'No description') + '</p>' +
+      '<p style="font-size: 12px; color: #888;">' +
+        'Created: ' + createdDate +
+        (folderCount > 0 ? ' • ' + folderCount + ' folders' : '') +
+        (ruleCount > 0 ? ' • ' + ruleCount + ' rules' : '') +
+      '</p>' +
+      '<div class="preset-actions">' +
+        '<button class="btn alt-button" onclick="loadPreset(' + preset.id + ')">Load</button>' +
+        '<button class="btn" style="background: #dc3545;" onclick="deletePreset(' + preset.id + ')">Delete</button>' +
+      '</div>' +
+    '</div>';
+  }).join('');
+}
+
+function savePresets() {
+  console.log('Saving presets:', presets.length);
+  if (window.electronAPI && window.electronAPI.savePresets) {
+    window.electronAPI.savePresets(presets)
+      .then(result => {
+        if (result.success) {
+          console.log('Presets saved successfully');
+        } else {
+          console.error('Failed to save presets:', result.error);
+        }
+      })
+      .catch(error => {
+        console.error('Error saving presets:', error);
+      });
+  } else {
+    console.error('electronAPI.savePresets not available');
+  }
+}
+
+async function loadPresets() {
+  console.log('Loading presets...');
+  try {
+    if (window.electronAPI && window.electronAPI.loadPresets) {
+      const result = await window.electronAPI.loadPresets();
+      if (result.success) {
+        presets = result.presets || [];
+        console.log('Presets loaded successfully:', presets.length);
+      } else {
+        console.error('Failed to load presets:', result.error);
+        presets = [];
+      }
+    } else {
+      console.error('electronAPI.loadPresets not available');
+      presets = [];
+    }
+  } catch (error) {
+    console.error('Error loading presets:', error);
+    presets = [];
+  }
+}
+
+// UTILITY FUNCTIONS
+function getShortPath(fullPath) {
+  const separator = window.electronAPI && window.electronAPI.path ? window.electronAPI.path.sep : '/';
+  const parts = fullPath.split(separator);
+  return parts.length > 2 ? '...' + separator + parts.slice(-2).join(separator) : fullPath;
+}
+
+function getFileExtension(filename) {
+  const lastDot = filename.lastIndexOf('.');
+  return lastDot > 0 ? filename.substring(lastDot) : '';
+}
+
+function getFileNameWithoutExtension(filename) {
+  const lastDot = filename.lastIndexOf('.');
+  return lastDot > 0 ? filename.substring(0, lastDot) : filename;
+}
+
+function toTitleCase(str) {
+  return str.replace(/\w\S*/g, function(txt) {
+    return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();
+  });
+}
+
+function escapeRegExp(string) {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\      const description = descriptions.length > 0 ?');
+}
+
+function updateButtonStates() {
+  console.log('=== Updating button states ===');
+  console.log('selectedFolderPath:', selectedFolderPath);
+  console.log('selectedFilesPath:', selectedFilesPath);
+  console.log('currentFiles:', currentFiles);
+  console.log('currentFiles length:', currentFiles ? currentFiles.length : 0);
+  
+  // Create Folders button
+  const createFoldersBtn = document.getElementById('create-folders-btn');
+  if (createFoldersBtn) {
+    const shouldEnable = !!selectedFolderPath;
+    createFoldersBtn.disabled = !shouldEnable;
+    console.log('Create folders button - should enable:', shouldEnable, 'disabled:', createFoldersBtn.disabled);
+  }
+
+  // Preview and Rename buttons
+  const previewBtn = document.getElementById('preview-btn');
+  const renameBtn = document.getElementById('rename-btn');
+  
+  const hasFilesAndFolder = !!(selectedFilesPath && currentFiles && currentFiles.length > 0);
+  console.log('Has files and folder check:', hasFilesAndFolder);
+  console.log('- selectedFilesPath exists:', !!selectedFilesPath);
+  console.log('- currentFiles exists:', !!currentFiles);
+  console.log('- currentFiles has length > 0:', currentFiles && currentFiles.length > 0);
+  
+  if (previewBtn) {
+    previewBtn.disabled = !hasFilesAndFolder;
+    console.log('Preview button - should enable:', hasFilesAndFolder, 'disabled:', previewBtn.disabled);
+    
+    // Force remove disabled styling if should be enabled
+    if (hasFilesAndFolder) {
+      previewBtn.style.opacity = '1';
+      previewBtn.style.cursor = 'pointer';
+      previewBtn.style.background = '#9C3587';
+    } else {
+      previewBtn.style.opacity = '0.5';
+      previewBtn.style.cursor = 'not-allowed';
+      previewBtn.style.background = '#666';
+    }
+  }
+  
+  if (renameBtn) {
+    renameBtn.disabled = !hasFilesAndFolder;
+    console.log('Rename button - should enable:', hasFilesAndFolder, 'disabled:', renameBtn.disabled);
+    
+    // Force remove disabled styling if should be enabled
+    if (hasFilesAndFolder) {
+      renameBtn.style.opacity = '1';
+      renameBtn.style.cursor = 'pointer';
+      renameBtn.style.background = '#9C3587';
+    } else {
+      renameBtn.style.opacity = '0.5';
+      renameBtn.style.cursor = 'not-allowed';
+      renameBtn.style.background = '#666';
+    }
+  }
+  
+  console.log('=== Button states update complete ===');
+}
+
+function showNotification(message, type) {
+  type = type || 'info';
+  const notification = document.createElement('div');
+  notification.className = 'notification ' + type;
+  notification.textContent = message;
+  
+  notification.style.position = 'fixed';
+  notification.style.top = '20px';
+  notification.style.right = '20px';
+  notification.style.padding = '12px 20px';
+  notification.style.borderRadius = '8px';
+  notification.style.color = 'white';
+  notification.style.fontWeight = '500';
+  notification.style.zIndex = '1000';
+  notification.style.maxWidth = '300px';
+  notification.style.opacity = '0';
+  notification.style.transform = 'translateY(-20px)';
+  notification.style.transition = 'all 0.3s ease';
+
+  const colors = {
+    success: '#E53F71',
+    error: '#F44336',
+    warning: '#FF9800',
+    info: '#16598fff'
+  };
+  notification.style.backgroundColor = colors[type] || colors.info;
+
+  document.body.appendChild(notification);
+
+  setTimeout(function() {
+    notification.style.opacity = '1';
+    notification.style.transform = 'translateY(0)';
+  }, 100);
+
+  setTimeout(function() {
+    notification.style.opacity = '0';
+    notification.style.transform = 'translateY(-20px)';
+    setTimeout(function() {
+      if (notification.parentNode) {
+        notification.parentNode.removeChild(notification);
+      }
+    }, 300);
+  }, 3000);
+}

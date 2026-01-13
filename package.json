@@ -1,0 +1,66 @@
+{
+  "name": "folderpilot",
+  "version": "1.0.0",
+  "description": "Folder and file management tool",
+  "main": "main.js",
+  "author": "Your Name",
+  "scripts": {
+    "start": "electron .",
+    "dev": "NODE_ENV=development electron .",
+    "build": "electron-builder",
+    "build-mac": "electron-builder --mac",
+    "build-win": "ELECTRON_GET_USE_PROXY=true GLOBAL_AGENT_HTTPS_PROXY=false electron-builder --win --config.compression=store",
+    "build-win-simple": "electron-builder --win --config.compression=store --config.nsis.oneClick=false",
+    "build-win-portable": "electron-builder --win --config.win.target=portable --config.compression=store",
+    "dist": "electron-builder --publish=never"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "electron": "^29.0.0",
+    "electron-builder": "^24.13.1"
+  },
+  "build": {
+    "appId": "com.yourcompany.folderpilot",
+    "productName": "FolderPilot",
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "main.js",
+      "preload.js",
+      "index.html",
+      "package.json",
+      "renderer/**/*"
+    ],
+    "extraFiles": [
+      {
+        "from": "renderer/assets",
+        "to": "renderer/assets",
+        "filter": ["**/*"]
+      }
+    ],
+    "mac": {
+      "category": "public.app-category.productivity",
+      "target": [
+        {
+          "target": "dmg",
+          "arch": ["x64", "arm64"]
+        }
+      ],
+      "icon": "assets/icon.icns"
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": ["x64"]
+        }
+      ],
+      "sign": null
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  }
+}

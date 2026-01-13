@@ -1,0 +1,3351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data:;">
+  <title>FolderPilot</title>
+  <style>
+    /* Dark scrollbar styling */
+    ::-webkit-scrollbar {
+      width: 12px;
+      height: 15px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #1C1C1C;
+      border-radius: 6px;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #4A4A4A;
+      border-radius: 6px;
+      border: 2px solid #1C1C1C;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: #5A5A5A;
+    }
+
+    ::-webkit-scrollbar-corner {
+      background: #1C1C1C;
+    }
+
+    /* Firefox scrollbar styling */
+    * {
+      scrollbar-width: thin;
+      scrollbar-color: #4A4A4A #1C1C1C;
+    }
+
+    @font-face {
+      font-family: "Avenir Next LT Pro Regular";
+        src: url('renderer/assets/Fonts/Avenir Next LT Pro Regular.otf') format('opentype');
+      font-weight: 400;
+      font-style: normal;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: "Avenir Next LT Pro Regular", -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui;
+      background: #0F1115;
+      color: #D1D5DB;
+      line-height: 1.6;
+      overflow-x: hidden;
+      min-height: 600px;
+      padding-top: 30px;
+    }
+
+    /* Header */
+    .header {
+      background: linear-gradient(102deg, #1E2427 95%, #48505E 98.8%);
+      padding: 20px 0;
+      text-align: center;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    }
+
+    .header h1 {
+      font-size: 36px;
+      font-weight: 700;
+      color: #6B7280;
+      margin: 0;
+    }
+
+    .header p {
+      color: #B0B0B0;
+      margin-top: 8px;
+      font-size: 16px;
+    }
+
+    /* Main Container */
+    .container {
+      display: flex;
+      gap: 12px;
+      min-height: 500px;
+      width: 900px;
+      max-width: 900px;
+      margin: 0;
+      padding: 12px;
+    }
+
+    /* Sidebar */
+    .sidebar {
+      width: 180px;
+      background: #1A1D23;
+      box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.15);
+      border-radius: 8px;
+      padding: 18px 12px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-height: 476px;
+      border: 1px solid rgba(107, 114, 128, 0.1);
+    }
+
+    .sidebar-content {
+      flex: 1;
+    }
+
+    .sidebar-nav {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .sidebar-item {
+      font-size: 12px;
+      font-weight: 400;
+      color: #D1D5DB;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      padding: 10px 12px;
+      border-radius: 8px;
+      border: none;
+      font-family: "Avenir Next LT Pro Regular", -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui;
+    }
+
+    .sidebar-item:hover {
+      color: #FFFFFF;
+      background: rgba(74, 144, 226, 0.2);
+      transform: translateX(5px);
+      box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .sidebar-item.active {
+      color: #D1D5DB;
+      background: #4B5563;
+      transform: translateX(5px);
+      box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.15);
+    }
+
+    .sidebar-title {
+      font-size: 29px;
+      font-weight: 700;
+      color: #D1D5DB;
+      margin-top: 30px;
+      text-align: center;
+      padding: 20px 0;
+      border-top: 1px solid rgba(107, 114, 128, 0.2);
+      font-family: "Avenir Next LT Pro Regular", -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui;
+    }
+
+    /* Main Content */
+    .main-content {
+      flex: 1;
+      overflow-y: auto;
+      min-height: 476px;
+      padding-right: 10px;
+    }
+
+    /* Sections */
+    .section {
+      display: none;
+    }
+
+    .section.active {
+      display: block;
+    }
+
+    /* Section Cards */
+    .section-card {
+      background: linear-gradient(135deg, #1C1F24 0%, #1F2227 100%);
+      border-radius: 10px;
+      padding: 24px;
+      margin-bottom: 0;
+      box-shadow: 0px 4px 12px rgba(0, 0, 0, 0.15);
+      border: 1px solid rgba(107, 114, 128, 0.1);
+      min-height: 476px;
+      overflow-y: auto;
+    }
+
+    .section-title {
+      color: #6B7280;
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: "Avenir Next LT Pro Regular", -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui;
+    }
+
+    .section-subtitle {
+      color: #D1D5DB;
+      font-size: 10px;
+      margin-bottom: 16px;
+      font-family: "Avenir Next LT Pro Regular", -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui;
+    }
+
+    /* Preset Management */
+    .preset-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .preset-card {
+      background: #1A1D23;
+      border-radius: 8px;
+      padding: 12px;
+      border: 1px solid rgba(107, 114, 128, 0.2);
+      transition: all 0.3s ease;
+      cursor: pointer;
+      box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .preset-card:hover {
+      border-color: #4A90E2;
+      transform: translateY(-2px);
+      box-shadow: 0px 4px 12px rgba(74, 144, 226, 0.15);
+    }
+
+    .preset-card.active {
+      border-color: #4A90E2;
+      background: rgba(74, 144, 226, 0.1);
+    }
+
+    .preset-name {
+      color: #6B7280;
+      font-size: 12px;
+      font-weight: 600;
+      margin-bottom: 5px;
+    }
+
+    .preset-description {
+      color: #B0B0B0;
+      font-size: 9px;
+      margin-bottom: 10px;
+    }
+
+    .preset-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 12px;
+      color: #888;
+    }
+
+    .preset-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    /* Form Elements */
+    .form-group {
+      margin-bottom: 12px;
+    }
+
+    .form-label {
+      display: block;
+      color: #6B7280;
+      font-size: 10px;
+      font-weight: 500;
+      margin-bottom: 5px;
+      font-family: "Avenir Next LT Pro Regular", -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui;
+    }
+
+    .form-input {
+      width: 100%;
+      height: 32px;
+      background: #151922;
+      border: 1px solid #6B7280;
+      border-radius: 8px;
+      padding: 0 10px;
+      color: #D1D5DB;
+      font-family: inherit;
+      font-size: 11px;
+      transition: all 0.3s ease;
+    }
+
+    .form-input:focus {
+      outline: none;
+      border-color: #4A90E2;
+      box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+    }
+
+    .form-input::placeholder {
+      color: #7C7C7C;
+    }
+
+    .form-textarea {
+      min-height: 110px;
+      resize: vertical;
+      padding: 10px;
+    }
+
+    /* Button Styles */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 5px;
+      height: 32px;
+      padding: 0 16px;
+      border: none;
+      border-radius: 8px;
+      font-family: "Avenir Next LT Pro Regular", -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui;
+      font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background: #F7E7CE;
+      color: #1E3A5F;
+    }
+
+    .btn-primary:hover {
+      background: #E6D4B7;
+      transform: translateY(-1px);
+      box-shadow: 0 5px 15px rgba(247, 231, 206, 0.3);
+    }
+
+    .btn-secondary {
+      background: #F7E7CE;
+      color: #1E3A5F;
+    }
+
+    .btn-secondary:hover {
+      background: #E6D4B7;
+      transform: translateY(-1px);
+      box-shadow: 0 5px 15px rgba(247, 231, 206, 0.3);
+    }
+
+    .btn-danger {
+      background: #dc3545;
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #c82333;
+    }
+
+    .btn-outline {
+      background: rgba(74, 144, 226, 0.15);
+      border: 1px solid #4A90E2;
+      color: #FFFFFF;
+      box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-outline:hover {
+      background: rgba(74, 144, 226, 0.25);
+      color: #FFFFFF;
+      transform: translateY(-1px);
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.15);
+    }
+
+    .btn-steel {
+      background: #4A90E2;
+      color: #FFFFFF;
+    }
+
+    .btn-steel:hover {
+      background: #357ABD;
+      transform: translateY(-1px);
+      box-shadow: 0 5px 15px rgba(74, 144, 226, 0.4);
+    }
+
+    .btn:disabled {
+      background: #666;
+      color: #999;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    /* Location Display */
+    .location-display {
+      background: #1A1D23;
+      border: 1px dashed rgba(107, 114, 128, 0.3);
+      border-radius: 8px;
+      padding: 12px;
+      text-align: center;
+      margin-bottom: 12px;
+      transition: all 0.3s ease;
+      box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .location-display.has-location {
+      border-style: solid;
+      background: rgba(30, 58, 95, 0.1);
+    }
+
+    .location-display .location-text {
+      color: #B0B0B0;
+      font-size: 10px;
+      margin-bottom: 6px;
+    }
+
+    .location-display .location-path {
+      color: #6B7280;
+      font-weight: 600;
+      word-break: break-all;
+    }
+
+    /* Rename Rules */
+    .rename-form {
+      background: #1A1D23;
+      border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 12px;
+      box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .rule-item {
+      background: #151922;
+      border-radius: 6px;
+      padding: 10px;
+      margin-bottom: 6px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border: 1px solid rgba(107, 114, 128, 0.2);
+      box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .rule-description {
+      color: #B0B0B0;
+      font-size: 9px;
+      flex: 1;
+    }
+
+    .rule-remove {
+      background: #dc3545;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    .rule-remove:hover {
+      background: #c82333;
+    }
+
+    /* Preview Section */
+    .preview-section {
+      background: #1A1D23;
+      border-radius: 8px;
+      padding: 16px;
+      margin-top: 12px;
+      display: none;
+      box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .preview-section.show {
+      display: block;
+    }
+
+    .preview-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .preview-title {
+      color: #6B7280;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .preview-list {
+      max-height: 300px;
+      overflow-y: auto;
+      margin-bottom: 20px;
+    }
+
+    .preview-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 10px;
+      margin-bottom: 5px;
+      background: #151922;
+      border-radius: 6px;
+      font-size: 10px;
+      box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.1);
+    }
+
+    .preview-old {
+      color: #ff6b6b;
+      flex: 1;
+      margin-right: 10px;
+    }
+
+    .preview-arrow {
+      color: #6B7280;
+      margin: 0 10px;
+    }
+
+    .preview-new {
+      color: #51cf66;
+      flex: 1;
+      margin-left: 10px;
+    }
+
+    /* Status Messages */
+    .status-message {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      padding: 16px 24px;
+      border-radius: 12px;
+      color: white;
+      font-weight: 500;
+      z-index: 1000;
+      max-width: 400px;
+      opacity: 0;
+      transform: translateY(-20px);
+      transition: all 0.3s ease;
+    }
+
+    .status-message.show {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .status-message.success {
+      background: #28a745;
+    }
+
+    .status-message.error {
+      background: #dc3545;
+    }
+
+    .status-message.warning {
+      background: #ffc107;
+      color: #000;
+    }
+
+    .status-message.info {
+      background: #17a2b8;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .container {
+        padding: 20px 15px;
+      }
+
+      .section-card {
+        padding: 20px;
+      }
+
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+
+      .btn-group {
+        flex-direction: column;
+      }
+
+      .preset-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* Empty State */
+    .empty-state {
+      text-align: center;
+      padding: 40px 20px;
+      color: #B0B0B0;
+    }
+
+    .empty-state .icon {
+      font-size: 48px;
+      margin-bottom: 15px;
+      opacity: 0.5;
+    }
+
+    /* JSON Import/Export */
+    .json-section {
+      background: #1A1D23;
+      border-radius: 8px;
+      padding: 16px;
+      margin-top: 12px;
+      box-shadow: 0px 2px 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .json-textarea {
+      background: #151922;
+      border: 1px solid #6B7280;
+      border-radius: 8px;
+      padding: 15px;
+      color: #D1D5DB;
+      font-family: 'Monaco', 'Consolas', monospace;
+      font-size: 12px;
+      min-height: 150px;
+      width: 100%;
+      resize: vertical;
+    }
+
+    /* Loading States */
+    .loading {
+      opacity: 0.6;
+      pointer-events: none;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid #ffffff;
+      border-radius: 50%;
+      border-top-color: transparent;
+      animation: spin 1s ease-in-out infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* Template Styles */
+    .template-item {
+      background: #1A1D23;
+      border-radius: 8px;
+      padding: 12px;
+      margin-bottom: 8px;
+      border: 1px solid rgba(107, 114, 128, 0.2);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .template-item:hover {
+      border-color: #4A90E2;
+      background: rgba(74, 144, 226, 0.05);
+    }
+
+    .template-item.selected {
+      border-color: #4A90E2;
+      background: rgba(74, 144, 226, 0.1);
+    }
+
+    .template-name {
+      color: #6B7280;
+      font-size: 14px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .template-description {
+      color: #B0B0B0;
+      font-size: 11px;
+      margin-bottom: 8px;
+    }
+
+    .template-preview {
+      background: #151922;
+      border-radius: 4px;
+      padding: 6px 8px;
+      font-size: 9px;
+      color: #D1D5DB;
+      font-family: monospace;
+      max-height: 60px;
+      overflow-y: auto;
+    }
+
+    .template-meta {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 8px;
+      font-size: 9px;
+      color: #888;
+    }
+
+    .folder-list-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: #1A1D23;
+      border-radius: 4px;
+      padding: 8px 10px;
+      margin-bottom: 4px;
+      border: 1px solid rgba(107, 114, 128, 0.2);
+      cursor: grab;
+    }
+
+    .folder-list-item:active {
+      cursor: grabbing;
+    }
+
+    .folder-list-item .folder-name {
+      color: #D1D5DB;
+      font-size: 11px;
+      flex: 1;
+    }
+
+    .folder-list-item .folder-actions {
+      display: flex;
+      gap: 4px;
+    }
+
+    .folder-list-item .move-btn {
+      background: #4A90E2;
+      color: white;
+      border: none;
+      border-radius: 3px;
+      padding: 2px 6px;
+      font-size: 10px;
+      cursor: pointer;
+    }
+
+    .folder-list-item .remove-btn {
+      background: #dc3545;
+      color: white;
+      border: none;
+      border-radius: 3px;
+      padding: 2px 6px;
+      font-size: 10px;
+      cursor: pointer;
+    }
+
+    .folder-list-empty {
+      text-align: center;
+      color: #B0B0B0;
+      font-size: 11px;
+      padding: 20px;
+    }
+  </style>
+</head>
+<body>
+  <!-- Main Container with Sidebar -->
+  <div class="container">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-content">
+        <ul class="sidebar-nav">
+          <li class="sidebar-item active" data-section="folders">Create Folders</li>
+          <li class="sidebar-item" data-section="rename">Rename Files</li>
+          <li class="sidebar-item" data-section="rename-folders">Rename Folders</li>
+          <li class="sidebar-item" data-section="presets">Presets</li>
+        </ul>
+      </div>
+      <div class="sidebar-title">FolderPilot</div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      
+      <!-- Folder Creation Section -->
+      <section class="section active" id="folders-section">
+        <div class="section-card">
+          <h2 class="section-title">Create Folders</h2>
+          <p class="section-subtitle">Bulk create folders from templates or custom lists</p>
+          
+          <!-- Location Display -->
+          <div class="location-display" id="folder-location-display">
+            <div class="location-text">No location selected</div>
+            <div class="location-path" id="folder-location-path">Click "Choose Location" to select where folders will be created</div>
+          </div>
+
+          <!-- Multiple Locations Display -->
+          <div class="location-display" id="multiple-locations-display" style="display: none;">
+            <div class="location-text">Multiple locations selected</div>
+            <div id="multiple-locations-list" style="max-height: 120px; overflow-y: auto; margin-top: 8px;">
+              <!-- Multiple locations will be listed here -->
+            </div>
+            <button class="btn btn-outline" style="margin-top: 8px; height: 24px; font-size: 9px; padding: 0 8px;" onclick="clearMultipleLocations()">Clear All</button>
+          </div>
+
+          <!-- Template Selection -->
+          <div class="form-group">
+            <label class="form-label">Quick Start Options</label>
+            <div class="btn-group" style="margin-bottom: 12px;">
+              <button class="btn btn-outline" onclick="showTemplateSelector()">Load Template</button>
+              <button class="btn btn-outline" onclick="showTemplateEditor()">Create Template</button>
+              <button class="btn btn-outline" onclick="exportFolderTemplates()">Export Templates</button>
+              <button class="btn btn-outline" onclick="importFolderTemplates()">Import Templates</button>
+            </div>
+          </div>
+
+          <!-- Folder Structure Type Selection -->
+          <div class="form-group">
+            <label class="form-label">Folder Structure Type</label>
+            <select class="form-input" id="folder-structure-type" onchange="toggleFolderStructureInputs()">
+              <option value="simple">Simple List</option>
+              <option value="structured">Root + Sub-folders</option>
+              <option value="template">From Template</option>
+            </select>
+          </div>
+
+          <!-- Template Selection Display -->
+          <div class="form-group" id="template-selection-display" style="display: none;">
+            <label class="form-label">Selected Template</label>
+            <div class="location-display" id="selected-template-display">
+              <div class="location-text">No template selected</div>
+              <div class="location-path" id="selected-template-name">Click "Load Template" to choose a template</div>
+            </div>
+            <button class="btn btn-outline" onclick="clearSelectedTemplate()" style="margin-top: 8px; height: 24px; font-size: 9px;">Clear Template</button>
+          </div>
+
+          <!-- Simple Folder Names Input -->
+          <div class="form-group" id="simple-folder-input">
+            <label class="form-label">Folder Names</label>
+            <textarea class="form-input form-textarea" id="folder-names" placeholder="Enter folder names, one per line:&#10;&#10;Documents&#10;Images&#10;Videos&#10;Projects"></textarea>
+          </div>
+
+          <!-- Structured Folder Input -->
+          <div id="structured-folder-input" style="display: none;">
+            <div class="form-group">
+              <label class="form-label">Root Folder Name</label>
+              <input type="text" class="form-input" id="root-folder-name" placeholder="e.g., blue-mexican">
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Sub-folder 1</label>
+                <input type="text" class="form-input" id="sub-folder-1" placeholder="e.g., Assets">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Sub-folder 2</label>
+                <input type="text" class="form-input" id="sub-folder-2" placeholder="e.g., CSV">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Sub-folder 3</label>
+                <input type="text" class="form-input" id="sub-folder-3" placeholder="e.g., Stills_Exports">
+              </div>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" style="text-align: center; display: block; width: 100%; margin: 16px 0 8px 0;">Additional Sub-folders (optional)</label>
+            <textarea class="form-input" id="additional-subfolders" rows="3" placeholder="Enter additional sub-folder names, one per line" style="vertical-align: top; text-align: left;"></textarea>
+          </div>
+
+          <!-- Action Buttons -->
+          <div class="btn-group">
+            <button class="btn btn-secondary" id="choose-location-btn" onclick="selectFolderLocation()">Choose Location</button>
+            <button class="btn btn-outline" id="choose-multiple-locations-btn" onclick="selectMultipleFolderLocations()">Select Multiple Folders</button>
+            <button class="btn btn-primary" id="create-folders-btn" onclick="createFolders()" disabled>Create Folders</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- File Renaming Section -->
+      <section class="section" id="rename-section">
+        <div class="section-card">
+          <h2 class="section-title">Bulk Rename Files</h2>
+          <p class="section-subtitle">Advanced renaming with custom rules and tags</p>
+          
+          <!-- Location Display -->
+          <div class="location-display" id="rename-location-display">
+            <div class="location-text">No folder selected</div>
+            <div class="location-path" id="rename-location-path">Click "Select Folder" to choose files to rename</div>
+          </div>
+
+          <!-- Select Folder Button -->
+          <div class="btn-group" style="margin-bottom: 16px;">
+            <button class="btn btn-steel" id="select-folder-btn" onclick="selectFilesFolder()">Select Folder</button>
+            <button class="btn btn-outline" id="select-assets-btn" onclick="selectSpecificAssets()">Select Assets</button>
+            <span id="file-count" style="color: #B0B0B0; margin-left: 10px; font-size: 10px;">No files loaded</span>
+          </div>
+
+          <!-- Active Rules Display -->
+          <div id="active-rules-section" style="display: none;">
+            <h3 style="color: #6B7280; margin-bottom: 10px; font-size: 12px;">Active Rules</h3>
+            <div id="active-rules-list">
+              <!-- Active rules will be displayed here -->
+            </div>
+          </div>
+
+          <!-- Rename Form -->
+          <div class="rename-form">
+            <h3 style="color: #6B7280; margin-bottom: 12px; font-size: 12px;">Add Rename Rule</h3>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Find Text</label>
+                <input type="text" class="form-input" id="find-text" placeholder="Text to find">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Replace With</label>
+                <input type="text" class="form-input" id="replace-text" placeholder="Replacement text">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Add Prefix</label>
+                <input type="text" class="form-input" id="add-prefix" placeholder="Text to add at start">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Add Suffix</label>
+                <input type="text" class="form-input" id="add-suffix" placeholder="Text to add at end">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Start Numbering At</label>
+                <input type="number" class="form-input" id="start-numbering" placeholder="1">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Change Case</label>
+                <select class="form-input" id="change-case">
+                  <option value="">No change</option>
+                  <option value="uppercase">UPPERCASE</option>
+                  <option value="lowercase">lowercase</option>
+                  <option value="titlecase">Title Case</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Rule Action Buttons -->
+            <div class="btn-group">
+              <button class="btn btn-secondary" onclick="addRenameRule()">Add Rule</button>
+              <button class="btn btn-outline" onclick="clearRules()">Clear All Rules</button>
+            </div>
+          </div>
+
+          <!-- Move/Copy Section -->
+          <div class="rename-form" style="margin-top: 16px;">
+            <h3 style="color: #6B7280; margin-bottom: 12px; font-size: 12px;">Move/Copy Assets</h3>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Operation Type</label>
+                <div style="font-size: 9px; color: #9CA3AF; margin-bottom: 6px;">
+                  <em>Note: Copy/Move operations work for files only, not folders</em>
+                </div>
+                <select class="form-input" id="operation-type">
+                  <option value="rename">Rename Only</option>
+                  <option value="copy">Copy to Multiple Locations</option>
+                  <option value="move">Move to Multiple Locations</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <button class="btn btn-outline" id="select-target-folders-btn" onclick="selectTargetFolders()" style="margin-top: 20px;">Select Target Folders</button>
+              </div>
+            </div>
+            
+            <!-- Target Folders Display -->
+            <div id="target-folders-section" style="display: none; margin-top: 12px;">
+              <label class="form-label">Target Folders</label>
+              <div id="target-folders-list" style="max-height: 100px; overflow-y: auto; background: #151922; border: 1px solid #6B7280; border-radius: 8px; padding: 8px;">
+                <!-- Target folders will be listed here -->
+              </div>
+              <button class="btn btn-outline" style="margin-top: 8px; height: 24px; font-size: 9px; padding: 0 8px;" onclick="clearTargetFolders()">Clear Targets</button>
+            </div>
+          </div>
+
+          <!-- Preview and Execute -->
+          <div class="btn-group">
+            <button class="btn btn-primary" id="preview-btn" onclick="showRenamePreview()" disabled>Generate Preview</button>
+            <button class="btn btn-secondary" id="execute-btn" onclick="executeRename()" disabled>Execute Operation</button>
+          </div>
+
+          <!-- Preview Section -->
+          <div class="preview-section" id="preview-section">
+            <div class="preview-header">
+              <h3 class="preview-title">Rename Preview</h3>
+              <div class="btn-group">
+                <button class="btn btn-outline" onclick="savePreviewAsPreset()">Save as Preset</button>
+                <button class="btn btn-outline" onclick="hidePreview()">Close Preview</button>
+              </div>
+            </div>
+            <div class="preview-list" id="preview-list">
+              <!-- Preview items will be shown here -->
+            </div>
+            <div class="btn-group">
+              <button class="btn btn-primary" onclick="executeRename()">Confirm Rename</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Rename Folders Section -->
+      <section class="section" id="rename-folders-section">
+        <div class="section-card">
+          <h2 class="section-title">Rename Folders</h2>
+          <p class="section-subtitle">Bulk rename folders in a selected directory</p>
+          
+          <!-- Folder Selection -->
+          <div class="location-display" id="folder-rename-location-display">
+            <div class="location-text">No parent folder selected</div>
+            <div class="location-path" id="folder-rename-location-path">Click "Select Parent Folder" to choose folders to rename</div>
+          </div>
+          
+          <div class="btn-group" style="margin-bottom: 16px;">
+            <button class="btn btn-steel" id="select-parent-folder-btn" onclick="selectParentFolder()">Select Parent Folder</button>
+            <span id="folder-count" style="color: #B0B0B0; margin-left: 10px; font-size: 10px;">No folders loaded</span>
+          </div>
+          
+          <!-- Folder List -->
+          <div id="folder-list-section" style="display: none;">
+            <label class="form-label">Folders to Rename:</label>
+            <div id="folder-list" style="max-height: 200px; overflow-y: auto; background: #151922; border: 1px solid #6B7280; border-radius: 8px; padding: 12px; margin-bottom: 16px;">
+              <!-- Folders will be listed here -->
+            </div>
+          </div>
+          
+          <!-- Rename Options -->
+          <div class="form-group">
+            <label class="form-label">Rename Pattern</label>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Add Prefix</label>
+                <input type="text" class="form-input" id="folder-prefix" placeholder="Text to add at start">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Add Suffix</label>
+                <input type="text" class="form-input" id="folder-suffix" placeholder="Text to add at end">
+              </div>
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Find Text</label>
+                <input type="text" class="form-input" id="folder-find-text" placeholder="Text to find">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Replace With</label>
+                <input type="text" class="form-input" id="folder-replace-text" placeholder="Replacement text">
+              </div>
+            </div>
+          </div>
+          
+          <!-- Action Buttons -->
+          <div class="btn-group">
+            <button class="btn btn-primary" id="preview-folder-rename-btn" onclick="previewFolderRename()" disabled>Preview Rename</button>
+            <button class="btn btn-secondary" id="execute-folder-rename-btn" onclick="executeFolderRename()" disabled>Execute Rename</button>
+          </div>
+          
+          <!-- Preview Section -->
+          <div id="folder-preview-section" style="display: none; margin-top: 16px;">
+            <label class="form-label">Preview:</label>
+            <div id="folder-preview-list" style="max-height: 300px; overflow-y: auto; background: #151922; border: 1px solid #6B7280; border-radius: 8px; padding: 12px;">
+              <!-- Preview will be shown here -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Preset Management Section -->
+      <section class="section" id="presets-section">
+        <div class="section-card">
+          <h2 class="section-title">Preset Templates</h2>
+          <p class="section-subtitle">Create, manage, and apply folder structure and naming convention templates</p>
+          
+          <div class="preset-grid" id="preset-grid">
+            <!-- Presets will be dynamically populated here -->
+          </div>
+
+          <!-- Create New Preset -->
+          <div class="form-group">
+            <label class="form-label">Create New Preset</label>
+            
+            <!-- Preset Type Selection -->
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label">Preset Type</label>
+                <select class="form-input" id="preset-type" onchange="togglePresetCreationFields()">
+                  <option value="folder">Folder Structure</option>
+                  <option value="naming">Naming Convention</option>
+                </select>
+              </div>
+            </div>
+            
+            <div class="form-row">
+              <input type="text" class="form-input" id="preset-name" placeholder="Preset name (e.g., 'Client Brand Guidelines')">
+              <input type="text" class="form-input" id="preset-description" placeholder="Description (optional)">
+            </div>
+            
+            <!-- Naming Convention Fields (hidden by default) -->
+            <div id="naming-preset-fields" style="display: none;">
+              <div class="form-group">
+                <label class="form-label">Naming Template</label>
+                <div style="margin-bottom: 8px;">
+                  <input type="text" class="form-input" id="naming-template" placeholder="e.g., {Brand}_{Campaign}_{Date}_{AdSize}_{Version}">
+                  <div style="font-size: 9px; color: #B0B0B0; margin-top: 4px;">Use curly braces for tags: {TagName}. Example: MyBrand_Summer2024_300x250_v1</div>
+                </div>
+              </div>
+              
+              <!-- Quick Tag Buttons -->
+              <div class="form-group">
+                <label class="form-label">Quick Tags</label>
+                <div id="quick-tags-container" class="btn-group" style="flex-wrap: wrap; gap: 5px;">
+                  <!-- Quick tags will be rendered here -->
+                </div>
+                <div class="btn-group" style="margin-top: 8px; gap: 5px;">
+                  <button type="button" class="btn btn-outline" style="height: 24px; padding: 0 8px; font-size: 9px;" onclick="addCustomTag()">+ Add Custom Tag</button>
+                  <button type="button" class="btn btn-outline" style="height: 24px; padding: 0 8px; font-size: 9px;" onclick="manageCustomTags()">Manage Tags</button>
+                </div>
+              </div>
+              
+              <!-- Custom Tag Management Modal (initially hidden) -->
+              <div id="tag-management-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+                <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #1C1F24; border-radius: 10px; padding: 24px; width: 400px; max-height: 500px; overflow-y: auto;">
+                  <h3 style="color: #6B7280; margin-bottom: 16px;">Manage Custom Tags</h3>
+                  
+                  <!-- Add New Tag -->
+                  <div class="form-group">
+                    <label class="form-label">Add New Tag</label>
+                    <div style="display: flex; gap: 8px;">
+                      <input type="text" id="new-tag-input" class="form-input" placeholder="Tag name (e.g., Client)" style="flex: 1;">
+                      <button class="btn btn-secondary" onclick="saveNewTag()" style="height: 32px; padding: 0 12px;">Add</button>
+                    </div>
+                  </div>
+                  
+                  <!-- Existing Tags -->
+                  <div class="form-group">
+                    <label class="form-label">Existing Tags</label>
+                    <div id="existing-tags-list" style="max-height: 200px; overflow-y: auto;">
+                      <!-- Existing tags will be listed here -->
+                    </div>
+                  </div>
+                  
+                  <div class="btn-group" style="margin-top: 16px; justify-content: flex-end;">
+                    <button class="btn btn-outline" onclick="closeTagManagement()">Close</button>
+                  </div>
+                </div>
+              </div>
+              
+              <!-- Live Preview -->
+              <div class="form-group">
+                <label class="form-label">Preview</label>
+                <div id="naming-preview" style="background: #1A1D23; border: 1px solid #6B7280; border-radius: 8px; padding: 10px; font-size: 10px; color: #D1D5DB; min-height: 32px; display: flex; align-items: center;">
+                  Enter a template above to see preview...
+                </div>
+              </div>
+            </div>
+            
+            <div class="btn-group">
+              <button class="btn btn-secondary" onclick="saveCurrentAsPreset()">Save Current Settings</button>
+              <button class="btn btn-secondary" id="save-naming-preset" onclick="saveNamingPreset()" style="display: none;">Save Naming Preset</button>
+              <button class="btn btn-outline" onclick="exportPresets()">Export Presets</button>
+              <button class="btn btn-outline" onclick="importPresets()">Import Presets</button>
+            </div>
+          </div>
+
+          <!-- JSON Import/Export -->
+          <div class="json-section" id="json-section" style="display: none;">
+            <label class="form-label">JSON Import/Export</label>
+            <textarea class="json-textarea" id="json-textarea" placeholder="Paste JSON here to import presets..."></textarea>
+            <div class="btn-group" style="margin-top: 10px;">
+              <button class="btn btn-primary" onclick="importFromJSON()">Import from JSON</button>
+              <button class="btn btn-outline" onclick="exportToJSON()">Export to JSON</button>
+              <button class="btn btn-outline" onclick="closeJSONSection()">Close</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Status Messages Container -->
+  <div id="status-container"></div>
+
+  <!-- Hidden file input for JSON import -->
+  <input type="file" id="file-input" accept=".json" style="display: none;" onchange="handleFileImport(event)">
+  
+  <!-- Template Selector Modal -->
+  <div id="template-selector-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #1C1F24; border-radius: 10px; padding: 24px; width: 600px; max-height: 600px; overflow-y: auto;">
+      <h3 style="color: #6B7280; margin-bottom: 16px;">Select Folder Template</h3>
+      
+      <!-- Search Templates -->
+      <div class="form-group">
+        <input type="text" id="template-search" class="form-input" placeholder="Search templates..." oninput="filterTemplates()">
+      </div>
+      
+      <!-- Template List -->
+      <div id="template-selector-list" style="max-height: 400px; overflow-y: auto; margin-bottom: 16px;">
+        <!-- Templates will be rendered here -->
+      </div>
+      
+      <div class="btn-group" style="justify-content: flex-end;">
+        <button class="btn btn-outline" onclick="closeTemplateSelector()">Cancel</button>
+        <button class="btn btn-primary" onclick="applySelectedTemplate()" disabled id="apply-template-btn">Apply Template</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Template Editor Modal -->
+  <div id="template-editor-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000;">
+    <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); background: #1C1F24; border-radius: 10px; padding: 24px; width: 700px; max-height: 700px; overflow-y: auto;">
+      <h3 style="color: #6B7280; margin-bottom: 16px;" id="template-editor-title">Create New Template</h3>
+      
+      <!-- Template Details -->
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Template Name</label>
+          <input type="text" id="template-editor-name" class="form-input" placeholder="e.g., European Languages">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Description</label>
+          <input type="text" id="template-editor-description" class="form-input" placeholder="Brief description">
+        </div>
+      </div>
+      
+      <!-- Folder List Editor -->
+      <div class="form-group">
+        <label class="form-label">Folder Names</label>
+        <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+          <input type="text" id="new-folder-name" class="form-input" placeholder="Enter folder name" style="flex: 1;" onkeypress="handleFolderNameKeyPress(event)">
+          <button class="btn btn-secondary" onclick="addFolderToTemplate()">Add</button>
+        </div>
+        <div id="template-folders-list" style="background: #151922; border: 1px solid #6B7280; border-radius: 8px; padding: 12px; min-height: 200px; max-height: 300px; overflow-y: auto;">
+          <!-- Folder list will be rendered here -->
+        </div>
+      </div>
+
+      <!-- Bulk Import -->
+      <div class="form-group">
+        <label class="form-label">Bulk Import (one folder name per line)</label>
+        <textarea id="bulk-folder-input" class="form-input" rows="4" placeholder="01_LAT&#10;02_BG&#10;03_CS&#10;04_HR"></textarea>
+        <button class="btn btn-outline" onclick="importBulkFolders()" style="margin-top: 8px; height: 28px; font-size: 10px;">Import List</button>
+      </div>
+      
+      <div class="btn-group" style="justify-content: space-between;">
+        <div>
+          <button class="btn btn-outline" onclick="clearTemplateEditor()">Clear All</button>
+          <button class="btn btn-danger" onclick="deleteCurrentTemplate()" id="delete-template-btn" style="display: none;">Delete Template</button>
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button class="btn btn-outline" onclick="closeTemplateEditor()">Cancel</button>
+          <button class="btn btn-primary" onclick="saveTemplate()">Save Template</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Global Variables
+    let selectedFolderPath = null;
+    let selectedFilesPath = null;
+    let selectedMultipleFolders = [];
+    let targetFolders = [];
+    let currentFiles = [];
+    let renameRules = [];
+    let presets = [];
+    let activePreset = null;
+    let customTags = [];
+    
+    // Template Management Variables
+    let folderTemplates = [];
+    let selectedTemplateId = null;
+    let editingTemplateId = null;
+    let currentTemplateFolders = [];
+
+    // Initialize App
+    document.addEventListener('DOMContentLoaded', async function() {
+      console.log('FolderPilot initializing...');
+      await loadPresets();
+      await loadCustomTags();
+      await loadFolderTemplates();
+      renderPresets();
+      renderQuickTags();
+      updateButtonStates();
+      initializeSidebar();
+      
+      // Add operation type change handler
+      const operationType = document.getElementById('operation-type');
+      if (operationType) {
+        operationType.addEventListener('change', function() {
+          const targetSection = document.getElementById('target-folders-section');
+          if (this.value === 'copy' || this.value === 'move') {
+            targetSection.style.display = 'block';
+          } else {
+            targetSection.style.display = 'none';
+          }
+        });
+      }
+      
+      console.log('FolderPilot ready!');
+    });
+
+    // SIDEBAR NAVIGATION
+    function initializeSidebar() {
+      const sidebarItems = document.querySelectorAll('.sidebar-item');
+      sidebarItems.forEach(item => {
+        item.addEventListener('click', () => {
+          switchSection(item.dataset.section);
+        });
+      });
+    }
+
+    function switchSection(sectionName) {
+      // Update sidebar active state
+      document.querySelectorAll('.sidebar-item').forEach(item => {
+        item.classList.remove('active');
+      });
+      document.querySelector(`[data-section="${sectionName}"]`).classList.add('active');
+
+      // Update main content sections
+      document.querySelectorAll('.section').forEach(section => {
+        section.classList.remove('active');
+      });
+      document.getElementById(`${sectionName}-section`).classList.add('active');
+    }
+
+    // PRESET MANAGEMENT
+    function renderPresets() {
+      const container = document.getElementById('preset-grid');
+      
+      if (presets.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <div class="icon" style="font-size: 29px;">No presets available</div>
+            <p>No presets yet. Create your first preset!</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = presets.map(preset => {
+        const createdDate = new Date(preset.createdAt).toLocaleDateString();
+        
+        // Different content based on preset type
+        let typeInfo = '';
+        let previewContent = '';
+        
+        if (preset.type === 'naming') {
+          typeInfo = 'Naming Convention';
+          previewContent = `<div style="font-size: 9px; color: #B0B0B0; margin-top: 6px; font-family: monospace; background: #151922; padding: 4px 6px; border-radius: 4px;">${preset.namingTemplate || 'No template'}</div>`;
+        } else if (preset.type === 'folder_template') {
+          typeInfo = 'Folder Template';
+          const folderPreview = preset.folders ? preset.folders.slice(0, 3).join(', ') + 
+            (preset.folders.length > 3 ? `... (+${preset.folders.length - 3} more)` : '') : 'No folders';
+          previewContent = `<div style="font-size: 9px; color: #B0B0B0; margin-top: 6px; font-family: monospace; background: #151922; padding: 4px 6px; border-radius: 4px;">${folderPreview}</div>`;
+        } else {
+          // Legacy folder structure presets
+          const folderCount = preset.folderNames ? preset.folderNames.split('\n').filter(name => name.trim()).length : 0;
+          const ruleCount = preset.renameRules ? preset.renameRules.length : 0;
+          typeInfo = `${folderCount} folders • ${ruleCount} rules`;
+          previewContent = '';
+        }
+        
+        return `
+          <div class="preset-card ${activePreset === preset.id ? 'active' : ''}" onclick="loadPreset(${preset.id})">
+            <div class="preset-name">${preset.name} ${preset.type === 'naming' ? '<span style="font-size: 8px; color: #1E3A5F; background: #F7E7CE; padding: 2px 6px; border-radius: 4px; margin-left: 6px;">NAMING</span>' : preset.type === 'folder_template' ? '<span style="font-size: 8px; color: #FFFFFF; background: #4A90E2; padding: 2px 6px; border-radius: 4px; margin-left: 6px;">TEMPLATE</span>' : ''}</div>
+            <div class="preset-description">${preset.description || 'No description'}</div>
+            ${previewContent}
+            <div class="preset-meta">
+              <span>Created: ${createdDate}</span>
+              <span>${typeInfo}</span>
+            </div>
+            <div class="preset-actions" onclick="event.stopPropagation()">
+              <button class="btn btn-outline" style="height: 35px; padding: 0 15px; font-size: 14px;" onclick="loadPreset(${preset.id})">Load</button>
+              <button class="btn btn-danger" style="height: 35px; padding: 0 15px; font-size: 14px;" onclick="deletePreset(${preset.id})">Delete</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function saveCurrentAsPreset() {
+      const name = document.getElementById('preset-name').value.trim();
+      if (!name) {
+        showStatus('Please enter a preset name', 'warning');
+        return;
+      }
+
+      const description = document.getElementById('preset-description').value.trim();
+      const folderNames = document.getElementById('folder-names').value;
+      
+      // Get current rename form values
+      const currentRule = {
+        findText: document.getElementById('find-text').value,
+        replaceWith: document.getElementById('replace-text').value,
+        addPrefix: document.getElementById('add-prefix').value,
+        addSuffix: document.getElementById('add-suffix').value,
+        startNumbering: document.getElementById('start-numbering').value,
+        changeCase: document.getElementById('change-case').value
+      };
+
+      const preset = {
+        id: Date.now(),
+        name: name,
+        description: description,
+        type: 'folder', // Mark as folder structure preset
+        folderNames: folderNames,
+        renameRules: [...renameRules],
+        currentRule: currentRule,
+        createdAt: new Date().toISOString()
+      };
+
+      presets.push(preset);
+      savePresets();
+      renderPresets();
+      
+      // Clear form
+      document.getElementById('preset-name').value = '';
+      document.getElementById('preset-description').value = '';
+      
+      showStatus(`Preset "${name}" saved successfully!`, 'success');
+    }
+
+    function loadPreset(presetId) {
+      const preset = presets.find(p => p.id === presetId);
+      if (!preset) {
+        showStatus('Preset not found', 'error');
+        return;
+      }
+
+      activePreset = presetId;
+      
+      if (preset.type === 'naming') {
+        // For naming presets, show information and allow copying template
+        showStatus(`Naming preset "${preset.name}" loaded. Template: ${preset.namingTemplate}`, 'info');
+        
+        // Optionally copy template to clipboard for easy use
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(preset.namingTemplate).then(() => {
+            showStatus('Naming template copied to clipboard!', 'success');
+          }).catch(() => {
+            showStatus(`Template: ${preset.namingTemplate}`, 'info');
+          });
+        }
+      } else if (preset.type === 'folder_template') {
+        // For folder templates, apply directly to the folder creation workflow
+        selectedTemplateId = preset.id;
+        document.getElementById('folder-structure-type').value = 'template';
+        toggleFolderStructureInputs();
+        
+        // Update template display
+        document.getElementById('selected-template-display').classList.add('has-location');
+        document.getElementById('selected-template-name').textContent = `${preset.name} (${preset.folders ? preset.folders.length : 0} folders)`;
+        
+        showStatus(`Folder template "${preset.name}" loaded with ${preset.folders ? preset.folders.length : 0} folders`, 'success');
+      } else {
+        // Load folder structure preset (existing functionality)
+        if (preset.folderNames) {
+          document.getElementById('folder-names').value = preset.folderNames;
+        }
+
+        // Load rename rules
+        renameRules = preset.renameRules ? [...preset.renameRules] : [];
+        renderActiveRules();
+        
+        // Load current rule into form
+        if (preset.currentRule) {
+          document.getElementById('find-text').value = preset.currentRule.findText || '';
+          document.getElementById('replace-text').value = preset.currentRule.replaceWith || '';
+          document.getElementById('add-prefix').value = preset.currentRule.addPrefix || '';
+          document.getElementById('add-suffix').value = preset.currentRule.addSuffix || '';
+          document.getElementById('start-numbering').value = preset.currentRule.startNumbering || '';
+          document.getElementById('change-case').value = preset.currentRule.changeCase || '';
+        }
+        
+        showStatus(`Preset "${preset.name}" loaded successfully!`, 'success');
+      }
+
+      renderPresets(); // Re-render to show active state
+    }
+
+    function deletePreset(presetId) {
+      if (!confirm('Are you sure you want to delete this preset?')) return;
+      
+      presets = presets.filter(p => p.id !== presetId);
+      if (activePreset === presetId) {
+        activePreset = null;
+      }
+      savePresets();
+      renderPresets();
+      showStatus('Preset deleted', 'info');
+    }
+
+    // FOLDER CREATION
+    async function selectFolderLocation() {
+      try {
+        if (!window.electronAPI || !window.electronAPI.selectFolder) {
+          showStatus('Electron API not available', 'error');
+          return;
+        }
+        
+        const result = await window.electronAPI.selectFolder();
+        
+        if (!result.canceled && result.filePaths && result.filePaths.length > 0) {
+          selectedFolderPath = result.filePaths[0];
+          
+          const locationDisplay = document.getElementById('folder-location-display');
+          const locationPath = document.getElementById('folder-location-path');
+          
+          locationDisplay.classList.add('has-location');
+          locationPath.textContent = getShortPath(selectedFolderPath);
+          
+          updateButtonStates();
+          showStatus('Selected folder: ' + getShortPath(selectedFolderPath), 'success');
+        }
+      } catch (error) {
+        console.error('Error selecting folder:', error);
+        showStatus('Error selecting folder: ' + error.message, 'error');
+      }
+    }
+
+    async function createFolders() {
+      const hasMultipleLocations = selectedMultipleFolders.length > 0;
+      const hasSingleLocation = selectedFolderPath;
+      
+      if (!hasMultipleLocations && !hasSingleLocation) {
+        showStatus('Please select a folder location first', 'warning');
+        return;
+      }
+
+      let folderNames;
+      try {
+        folderNames = getStructuredFolderNames();
+      } catch (error) {
+        showStatus(error.message, 'warning');
+        return;
+      }
+
+      if (folderNames.length === 0) {
+        showStatus('Please enter at least one folder name', 'warning');
+        return;
+      }
+
+      const locations = hasMultipleLocations ? selectedMultipleFolders : [selectedFolderPath];
+
+      try {
+        const createBtn = document.getElementById('create-folders-btn');
+        createBtn.innerHTML = '<span class="spinner"></span> Creating...';
+        createBtn.disabled = true;
+
+        let totalSuccess = 0;
+        let totalFail = 0;
+
+        for (const location of locations) {
+          const result = await window.electronAPI.createFolders(folderNames, location);
+          
+          if (result && result.success) {
+            const successCount = result.results.filter(r => r.success).length;
+            const failCount = result.results.filter(r => !r.success).length;
+            totalSuccess += successCount;
+            totalFail += failCount;
+          } else {
+            totalFail += folderNames.length;
+          }
+        }
+        
+        if (totalFail === 0) {
+          showStatus(`Successfully created ${totalSuccess} folders in ${locations.length} location(s)!`, 'success');
+          // Clear form inputs
+          document.getElementById('folder-names').value = '';
+          document.getElementById('root-folder-name').value = '';
+          document.getElementById('sub-folder-1').value = '';
+          document.getElementById('sub-folder-2').value = '';
+          document.getElementById('sub-folder-3').value = '';
+          document.getElementById('additional-subfolders').value = '';
+        } else {
+          showStatus(`Created ${totalSuccess} folders, ${totalFail} failed across ${locations.length} location(s)`, 'warning');
+        }
+      } catch (error) {
+        console.error('Error creating folders:', error);
+        showStatus('Error creating folders: ' + error.message, 'error');
+      } finally {
+        const createBtn = document.getElementById('create-folders-btn');
+        createBtn.innerHTML = 'Create Folders';
+        updateButtonStates();
+      }
+    }
+
+    // FILE RENAMING
+    async function selectFilesFolder() {
+      try {
+        console.log('selectFilesFolder called');
+        if (!window.electronAPI || !window.electronAPI.selectFilesFolder) {
+          showStatus('Electron API not available', 'error');
+          return;
+        }
+        
+        const result = await window.electronAPI.selectFilesFolder();
+        console.log('selectFilesFolder result:', result);
+        
+        if (!result.canceled && result.filePaths && result.filePaths.length > 0) {
+          selectedFilesPath = result.filePaths[0];
+          console.log('Selected folder path:', selectedFilesPath);
+          
+          const locationDisplay = document.getElementById('rename-location-display');
+          const locationPath = document.getElementById('rename-location-path');
+          
+          locationDisplay.classList.add('has-location');
+          locationPath.textContent = getShortPath(selectedFilesPath);
+          
+          await loadFilesFromFolder();
+        } else {
+          console.log('Folder selection was cancelled or failed');
+          showStatus('Folder selection was cancelled', 'info');
+        }
+      } catch (error) {
+        console.error('Error selecting files folder:', error);
+        showStatus('Error selecting folder: ' + error.message, 'error');
+      }
+    }
+
+    async function selectSpecificAssets() {
+      try {
+        if (!window.electronAPI || !window.electronAPI.selectSpecificFiles) {
+          showStatus('File selection not available', 'error');
+          return;
+        }
+        
+        const result = await window.electronAPI.selectSpecificFiles();
+        
+        if (!result.canceled && result.filePaths && result.filePaths.length > 0) {
+          // Set the folder path from the first selected file
+          selectedFilesPath = window.electronAPI.path.dirname(result.filePaths[0]);
+          
+          // Create file objects from selected files
+          currentFiles = result.filePaths.map(filePath => {
+            const fileName = window.electronAPI.path.basename(filePath);
+            return {
+              name: fileName,
+              path: filePath,
+              extension: window.electronAPI.path.extname(fileName),
+              isDirectory: false
+            };
+          });
+          
+          const locationDisplay = document.getElementById('rename-location-display');
+          const locationPath = document.getElementById('rename-location-path');
+          const fileCount = document.getElementById('file-count');
+          
+          locationDisplay.classList.add('has-location');
+          locationPath.textContent = `Selected ${currentFiles.length} specific assets`;
+          fileCount.textContent = `${currentFiles.length} assets selected`;
+          
+          updateButtonStates();
+          showStatus(`Selected ${currentFiles.length} specific assets`, 'success');
+        }
+      } catch (error) {
+        console.error('Error selecting specific assets:', error);
+        showStatus('Error selecting assets: ' + error.message, 'error');
+      }
+    }
+
+    async function loadFilesFromFolder() {
+      try {
+        if (!window.electronAPI || !window.electronAPI.getFiles) {
+          showStatus('Electron API not available', 'error');
+          return;
+        }
+        
+        console.log('Loading files from:', selectedFilesPath);
+        const result = await window.electronAPI.getFiles(selectedFilesPath);
+        console.log('getFiles result:', result);
+        
+        if (result && result.success) {
+          console.log('All items from getFiles:', result.files);
+          
+          // Filter out directories to only show files
+          currentFiles = result.files.filter(file => !file.isDirectory);
+          console.log('Filtered files (non-directories):', currentFiles);
+          
+          const fileCount = document.getElementById('file-count');
+          fileCount.textContent = `${currentFiles.length} files loaded`;
+          
+          updateButtonStates();
+          
+          if (currentFiles.length === 0 && result.files.length > 0) {
+            showStatus(`Folder contains ${result.files.length} items but no files (only directories)`, 'warning');
+          } else if (currentFiles.length === 0) {
+            showStatus('No files found in the selected folder', 'warning');
+          } else {
+            showStatus(`Loaded ${currentFiles.length} files from folder (${result.files.length} total items)`, 'info');
+          }
+          
+          console.log('Loaded files:', currentFiles);
+        } else {
+          showStatus('Error loading files: ' + (result ? result.error : 'Unknown error'), 'error');
+          currentFiles = [];
+          updateButtonStates();
+        }
+      } catch (error) {
+        console.error('Error loading files:', error);
+        showStatus('Error loading files: ' + error.message, 'error');
+        currentFiles = [];
+        updateButtonStates();
+      }
+    }
+
+    function addRenameRule() {
+      const rule = {
+        findText: document.getElementById('find-text').value,
+        replaceWith: document.getElementById('replace-text').value,
+        addPrefix: document.getElementById('add-prefix').value,
+        addSuffix: document.getElementById('add-suffix').value,
+        startNumbering: document.getElementById('start-numbering').value,
+        changeCase: document.getElementById('change-case').value
+      };
+
+      const hasContent = Object.values(rule).some(value => value.trim() !== '');
+      
+      if (!hasContent) {
+        showStatus('Please fill in at least one field to add a rule', 'warning');
+        return;
+      }
+
+      renameRules.push(rule);
+      showStatus(`Added rename rule (${renameRules.length} total)`, 'success');
+      
+      // Clear form inputs
+      document.getElementById('find-text').value = '';
+      document.getElementById('replace-text').value = '';
+      document.getElementById('add-prefix').value = '';
+      document.getElementById('add-suffix').value = '';
+      document.getElementById('start-numbering').value = '';
+      document.getElementById('change-case').value = '';
+      
+      renderActiveRules();
+      hidePreview();
+    }
+
+    function renderActiveRules() {
+      const section = document.getElementById('active-rules-section');
+      const container = document.getElementById('active-rules-list');
+      
+      if (renameRules.length === 0) {
+        section.style.display = 'none';
+        return;
+      }
+      
+      section.style.display = 'block';
+      container.innerHTML = renameRules.map((rule, index) => {
+        const descriptions = [];
+        if (rule.findText && rule.replaceWith !== undefined) {
+          descriptions.push(`Replace "${rule.findText}" with "${rule.replaceWith}"`);
+        }
+        if (rule.addPrefix) {
+          descriptions.push(`Add prefix "${rule.addPrefix}"`);
+        }
+        if (rule.addSuffix) {
+          descriptions.push(`Add suffix "${rule.addSuffix}"`);
+        }
+        if (rule.startNumbering) {
+          descriptions.push(`Number starting at ${rule.startNumbering}`);
+        }
+        if (rule.changeCase) {
+          descriptions.push(`Change case to ${rule.changeCase}`);
+        }
+        
+        const description = descriptions.length > 0 ? descriptions.join(', ') : 'Empty rule';
+        
+        return `
+          <div class="rule-item">
+            <span class="rule-description">${description}</span>
+            <button class="rule-remove" onclick="removeRule(${index})">Remove</button>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function removeRule(index) {
+      renameRules.splice(index, 1);
+      renderActiveRules();
+      hidePreview();
+      showStatus('Rule removed', 'info');
+    }
+
+    function clearRules() {
+      if (renameRules.length === 0) {
+        showStatus('No rules to clear', 'info');
+        return;
+      }
+      
+      if (confirm('Are you sure you want to clear all rename rules?')) {
+        renameRules = [];
+        renderActiveRules();
+        hidePreview();
+        showStatus('All rules cleared', 'info');
+      }
+    }
+
+    function showRenamePreview() {
+      if (!selectedFilesPath || !currentFiles || currentFiles.length === 0) {
+        showStatus('Please select a folder with files first', 'warning');
+        return;
+      }
+
+      // Get current rule from form if any fields are filled
+      const currentRule = {
+        findText: document.getElementById('find-text').value,
+        replaceWith: document.getElementById('replace-text').value,
+        addPrefix: document.getElementById('add-prefix').value,
+        addSuffix: document.getElementById('add-suffix').value,
+        startNumbering: document.getElementById('start-numbering').value,
+        changeCase: document.getElementById('change-case').value
+      };
+
+      const hasCurrentContent = Object.values(currentRule).some(value => value.trim() !== '');
+      
+      let rulesToApply = [...renameRules];
+      if (hasCurrentContent) {
+        rulesToApply.push(currentRule);
+      }
+
+      if (rulesToApply.length === 0) {
+        showStatus('Please add at least one rename rule or fill in the form', 'warning');
+        return;
+      }
+
+      const operations = generateRenameOperations(currentFiles, rulesToApply);
+      
+      if (operations.length === 0) {
+        // Provide more helpful feedback about why no files were renamed
+        const ruleDescriptions = rulesToApply.map(rule => {
+          const parts = [];
+          if (rule.findText) parts.push(`Find "${rule.findText}"`);
+          if (rule.replaceWith !== undefined) parts.push(`Replace with "${rule.replaceWith}"`);
+          if (rule.addPrefix) parts.push(`Add prefix "${rule.addPrefix}"`);
+          if (rule.addSuffix) parts.push(`Add suffix "${rule.addSuffix}"`);
+          if (rule.startNumbering) parts.push(`Number from ${rule.startNumbering}`);
+          if (rule.changeCase) parts.push(`Change case to ${rule.changeCase}`);
+          return parts.length > 0 ? parts.join(', ') : 'Empty rule';
+        });
+        
+        const fileNames = currentFiles.map(f => f.name).join(', ');
+        showStatus(`No files match current rules. Rules: [${ruleDescriptions.join(' | ')}]. Files: [${fileNames}]`, 'warning');
+        return;
+      }
+
+      renderPreview(operations);
+      document.getElementById('preview-section').classList.add('show');
+      showStatus(`Preview generated for ${operations.length} files`, 'info');
+    }
+
+    function renderPreview(operations) {
+      const container = document.getElementById('preview-list');
+      
+      container.innerHTML = operations.map(op => `
+        <div class="preview-item">
+          <span class="preview-old">${op.oldName}</span>
+          <span class="preview-arrow">→</span>
+          <span class="preview-new">${op.newName}</span>
+        </div>
+      `).join('');
+    }
+
+    function hidePreview() {
+      document.getElementById('preview-section').classList.remove('show');
+    }
+
+    async function executeRename() {
+      console.log('executeRename called', { selectedFilesPath, currentFiles: currentFiles?.length });
+      
+      if (!selectedFilesPath) {
+        showStatus('Please select a folder first', 'warning');
+        return;
+      }
+      
+      if (!currentFiles || currentFiles.length === 0) {
+        showStatus('No files found in the selected folder', 'warning');
+        return;
+      }
+
+      // Get current rule from form if any fields are filled
+      const currentRule = {
+        findText: document.getElementById('find-text').value,
+        replaceWith: document.getElementById('replace-text').value,
+        addPrefix: document.getElementById('add-prefix').value,
+        addSuffix: document.getElementById('add-suffix').value,
+        startNumbering: document.getElementById('start-numbering').value,
+        changeCase: document.getElementById('change-case').value
+      };
+
+      const hasCurrentContent = Object.values(currentRule).some(value => value.trim() !== '');
+      
+      let rulesToApply = [...renameRules];
+      if (hasCurrentContent) {
+        rulesToApply.push(currentRule);
+      }
+
+      if (rulesToApply.length === 0) {
+        showStatus('Please add at least one rename rule', 'warning');
+        return;
+      }
+
+      const operationType = document.getElementById('operation-type').value;
+      
+      // Check if copy/move operation requires target folders
+      if ((operationType === 'copy' || operationType === 'move') && targetFolders.length === 0) {
+        showStatus('Please select target folders for copy/move operation', 'warning');
+        return;
+      }
+
+      const confirmMessage = operationType === 'rename' 
+        ? 'Are you sure you want to rename these files? This action cannot be undone.'
+        : operationType === 'copy'
+        ? `Are you sure you want to copy files to ${targetFolders.length} location(s)?`
+        : `Are you sure you want to move files to ${targetFolders.length} location(s)? This will remove files from the source folder.`;
+
+      if (!confirm(confirmMessage)) {
+        return;
+      }
+
+      try {
+        const executeBtn = document.getElementById('execute-btn');
+        const originalText = executeBtn.innerHTML;
+        executeBtn.innerHTML = `<span class="spinner"></span> ${operationType === 'rename' ? 'Renaming' : operationType === 'copy' ? 'Copying' : 'Moving'}...`;
+        executeBtn.disabled = true;
+
+        const operations = generateRenameOperations(currentFiles, rulesToApply);
+        console.log('Generated operations for execution:', operations);
+        
+        if (operations.length === 0) {
+          showStatus('No files to process with current rules', 'warning');
+          return;
+        }
+        
+        console.log(`Executing ${operationType} operation with ${operations.length} files to ${targetFolders.length} targets`);
+
+        let result;
+        
+        if (operationType === 'rename') {
+          result = await window.electronAPI.renameFiles(operations, selectedFilesPath);
+        } else if (operationType === 'copy') {
+          result = await window.electronAPI.copyFiles(operations, targetFolders);
+        } else if (operationType === 'move') {
+          result = await window.electronAPI.moveFiles(operations, targetFolders);
+        }
+        
+        if (result.success) {
+          const successCount = result.results.filter(r => r.success).length;
+          const failCount = result.results.filter(r => !r.success).length;
+          
+          if (failCount === 0) {
+            const successMessage = operationType === 'rename' 
+              ? `Successfully renamed ${successCount} files!`
+              : operationType === 'copy'
+              ? `Successfully copied ${successCount} files to ${targetFolders.length} location(s)!`
+              : `Successfully moved ${successCount} files to ${targetFolders.length} location(s)!`;
+            
+            showStatus(successMessage, 'success');
+            
+            // Clear form and rules
+            renameRules = [];
+            document.getElementById('find-text').value = '';
+            document.getElementById('replace-text').value = '';
+            document.getElementById('add-prefix').value = '';
+            document.getElementById('add-suffix').value = '';
+            document.getElementById('start-numbering').value = '';
+            document.getElementById('change-case').value = '';
+            renderActiveRules();
+            
+            // For move operations, refresh the file list since files have been moved
+            if (operationType === 'move' || operationType === 'rename') {
+              await loadFilesFromFolder();
+            }
+            
+            hidePreview();
+          } else {
+            const failMessage = operationType === 'rename'
+              ? `Renamed ${successCount} files, ${failCount} failed`
+              : operationType === 'copy'
+              ? `Copied ${successCount} files, ${failCount} failed`
+              : `Moved ${successCount} files, ${failCount} failed`;
+            
+            showStatus(failMessage, 'warning');
+          }
+        } else {
+          showStatus(`Failed to ${operationType} files: ` + result.error, 'error');
+        }
+      } catch (error) {
+        showStatus(`Error ${operationType}ing files: ` + error.message, 'error');
+      } finally {
+        const executeBtn = document.getElementById('execute-btn');
+        executeBtn.innerHTML = 'Execute Operation';
+        updateButtonStates();
+      }
+    }
+
+    function generateRenameOperations(files, rules) {
+      console.log('generateRenameOperations called with:', { 
+        filesCount: files.length, 
+        files: files.map(f => f.name), 
+        rules: rules.map(r => `Find: "${r.findText}" Replace: "${r.replaceWith}" Prefix: "${r.addPrefix}" Suffix: "${r.addSuffix}"`)
+      });
+      
+      const operations = [];
+      let numberingCounter = 1;
+
+      files.forEach(file => {
+        if (file.name === '.DS_Store' || file.name.startsWith('.')) {
+          return;
+        }
+
+        let newName = file.name;
+        const extension = getFileExtension(file.name);
+        let nameWithoutExt = getFileNameWithoutExtension(file.name);
+
+        rules.forEach(rule => {
+          if (rule.findText && rule.replaceWith !== undefined && rule.findText.trim() !== '') {
+            const escaped = escapeRegExp(rule.findText.trim());
+            nameWithoutExt = nameWithoutExt.replace(new RegExp(escaped, 'g'), rule.replaceWith);
+            console.log(`Applied find/replace: "${rule.findText}" -> "${rule.replaceWith}" on "${nameWithoutExt}"`);
+          }
+
+          if (rule.addPrefix && rule.addPrefix.trim() !== '') {
+            nameWithoutExt = rule.addPrefix.trim() + nameWithoutExt;
+            console.log(`Added prefix "${rule.addPrefix.trim()}" to get: ${nameWithoutExt}`);
+          }
+
+          if (rule.addSuffix && rule.addSuffix.trim() !== '') {
+            nameWithoutExt = nameWithoutExt + rule.addSuffix.trim();
+            console.log(`Added suffix "${rule.addSuffix.trim()}" to get: ${nameWithoutExt}`);
+          }
+
+          if (rule.startNumbering) {
+            const startNum = parseInt(rule.startNumbering) || 1;
+            const currentNum = startNum + (numberingCounter - 1);
+            nameWithoutExt = nameWithoutExt + ' ' + currentNum;
+          }
+
+          if (rule.changeCase) {
+            switch (rule.changeCase.toLowerCase()) {
+              case 'uppercase':
+                nameWithoutExt = nameWithoutExt.toUpperCase();
+                break;
+              case 'lowercase':
+                nameWithoutExt = nameWithoutExt.toLowerCase();
+                break;
+              case 'titlecase':
+                nameWithoutExt = toTitleCase(nameWithoutExt);
+                break;
+            }
+          }
+        });
+
+        newName = nameWithoutExt + extension;
+
+        if (newName !== file.name) {
+          operations.push({
+            oldPath: file.path,
+            newPath: window.electronAPI.path.join(selectedFilesPath, newName),
+            oldName: file.name,
+            newName: newName
+          });
+        }
+
+        numberingCounter++;
+      });
+
+      return operations;
+    }
+
+    function savePreviewAsPreset() {
+      const presetName = prompt('Enter a name for this preset:');
+      if (!presetName || !presetName.trim()) {
+        showStatus('Please enter a valid preset name', 'warning');
+        return;
+      }
+      
+      const folderNames = document.getElementById('folder-names').value;
+      
+      // Get current form inputs
+      const currentRule = {
+        findText: document.getElementById('find-text').value,
+        replaceWith: document.getElementById('replace-text').value,
+        addPrefix: document.getElementById('add-prefix').value,
+        addSuffix: document.getElementById('add-suffix').value,
+        startNumbering: document.getElementById('start-numbering').value,
+        changeCase: document.getElementById('change-case').value
+      };
+
+      const preset = {
+        id: Date.now(),
+        name: presetName.trim(),
+        description: 'Saved from preview on ' + new Date().toLocaleDateString(),
+        folderNames: folderNames,
+        renameRules: [...renameRules],
+        currentRule: currentRule,
+        createdAt: new Date().toISOString()
+      };
+
+      presets.push(preset);
+      savePresets();
+      renderPresets();
+      
+      showStatus(`Preset "${presetName}" saved from preview!`, 'success');
+    }
+
+    // IMPORT/EXPORT FUNCTIONALITY
+    function exportPresets() {
+      document.getElementById('json-section').style.display = 'block';
+      document.getElementById('json-textarea').value = JSON.stringify(presets, null, 2);
+    }
+
+    function importPresets() {
+      document.getElementById('json-section').style.display = 'block';
+      document.getElementById('json-textarea').value = '';
+      document.getElementById('json-textarea').placeholder = 'Paste JSON presets here...';
+    }
+
+    function exportToJSON() {
+      const dataStr = JSON.stringify(presets, null, 2);
+      const dataBlob = new Blob([dataStr], {type: 'application/json'});
+      const url = URL.createObjectURL(dataBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `folderpilot-presets-${new Date().toISOString().split('T')[0]}.json`;
+      link.click();
+      URL.revokeObjectURL(url);
+      showStatus('Presets exported successfully!', 'success');
+    }
+
+    function importFromJSON() {
+      const jsonText = document.getElementById('json-textarea').value.trim();
+      if (!jsonText) {
+        showStatus('Please paste JSON data first', 'warning');
+        return;
+      }
+
+      try {
+        const importedPresets = JSON.parse(jsonText);
+        if (!Array.isArray(importedPresets)) {
+          throw new Error('Invalid format: expected an array of presets');
+        }
+
+        // Validate preset structure
+        importedPresets.forEach((preset, index) => {
+          if (!preset.name || !preset.id) {
+            throw new Error(`Invalid preset at index ${index}: missing name or id`);
+          }
+        });
+
+        // Merge with existing presets (avoid duplicates by name)
+        const existingNames = presets.map(p => p.name);
+        const newPresets = importedPresets.filter(p => !existingNames.includes(p.name));
+        
+        presets.push(...newPresets);
+        savePresets();
+        renderPresets();
+        closeJSONSection();
+        
+        showStatus(`Imported ${newPresets.length} new presets!`, 'success');
+      } catch (error) {
+        showStatus('Error importing presets: ' + error.message, 'error');
+      }
+    }
+
+    function handleFileImport(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        document.getElementById('json-textarea').value = e.target.result;
+        importFromJSON();
+      };
+      reader.readAsText(file);
+    }
+
+    function closeJSONSection() {
+      document.getElementById('json-section').style.display = 'none';
+    }
+
+    // UTILITY FUNCTIONS
+    function updateButtonStates() {
+      // Create Folders button
+      const createBtn = document.getElementById('create-folders-btn');
+      const hasLocation = selectedFolderPath || selectedMultipleFolders.length > 0;
+      createBtn.disabled = !hasLocation;
+
+      // Preview and Execute buttons
+      const previewBtn = document.getElementById('preview-btn');
+      const executeBtn = document.getElementById('execute-btn');
+      
+      // Enable buttons if we have a folder selected (even if no files)
+      const hasFolder = selectedFilesPath;
+      previewBtn.disabled = !hasFolder;
+      executeBtn.disabled = !hasFolder;
+      
+      // Debug logging
+      console.log('updateButtonStates:', {
+        selectedFilesPath,
+        currentFiles: currentFiles ? currentFiles.length : 'null',
+        previewDisabled: previewBtn ? previewBtn.disabled : 'button not found',
+        executeDisabled: executeBtn ? executeBtn.disabled : 'button not found'
+      });
+    }
+
+    function getShortPath(fullPath) {
+      if (!fullPath) return '';
+      const separator = window.electronAPI && window.electronAPI.path ? window.electronAPI.path.sep : '/';
+      const parts = fullPath.split(separator);
+      return parts.length > 2 ? '...' + separator + parts.slice(-2).join(separator) : fullPath;
+    }
+
+    function getFileExtension(filename) {
+      const lastDot = filename.lastIndexOf('.');
+      return lastDot > 0 ? filename.substring(lastDot) : '';
+    }
+
+    function getFileNameWithoutExtension(filename) {
+      const lastDot = filename.lastIndexOf('.');
+      return lastDot > 0 ? filename.substring(0, lastDot) : filename;
+    }
+
+    function toTitleCase(str) {
+      return str.replace(/\w\S*/g, txt => txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase());
+    }
+
+    function escapeRegExp(string) {
+      return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+
+    // NAMING PRESET FUNCTIONALITY
+    function togglePresetCreationFields() {
+      const presetType = document.getElementById('preset-type').value;
+      const namingFields = document.getElementById('naming-preset-fields');
+      const saveCurrentBtn = document.querySelector('button[onclick="saveCurrentAsPreset()"]');
+      const saveNamingBtn = document.getElementById('save-naming-preset');
+      
+      if (presetType === 'naming') {
+        namingFields.style.display = 'block';
+        saveCurrentBtn.style.display = 'none';
+        saveNamingBtn.style.display = 'inline-flex';
+        updateNamingPreview();
+      } else {
+        namingFields.style.display = 'none';
+        saveCurrentBtn.style.display = 'inline-flex';
+        saveNamingBtn.style.display = 'none';
+      }
+    }
+
+    function insertTag(tagName) {
+      const templateInput = document.getElementById('naming-template');
+      const cursorPos = templateInput.selectionStart;
+      const textBefore = templateInput.value.substring(0, cursorPos);
+      const textAfter = templateInput.value.substring(templateInput.selectionEnd);
+      
+      // Ask user if they want to insert template tag or actual value
+      const choice = confirm(`Click OK to insert template tag {${tagName}} or Cancel to enter actual value`);
+      
+      let tagText;
+      if (choice) {
+        // Insert template tag with braces
+        tagText = `{${tagName}}`;
+      } else {
+        // Prompt for actual value
+        const tagValue = prompt(`Enter value for ${tagName} (e.g., for Brand: "Wolt", "JET", "Woolworths"):`);
+        if (tagValue === null) {
+          return; // User clicked cancel on the prompt
+        }
+        if (!tagValue.trim()) {
+          showStatus('Please enter a value for the tag', 'warning');
+          return;
+        }
+        tagText = tagValue.trim();
+      }
+      
+      templateInput.value = textBefore + tagText + textAfter;
+      templateInput.setSelectionRange(cursorPos + tagText.length, cursorPos + tagText.length);
+      templateInput.focus();
+      updateNamingPreview();
+    }
+
+    function updateNamingPreview() {
+      const template = document.getElementById('naming-template').value;
+      const previewDiv = document.getElementById('naming-preview');
+      
+      if (!template.trim()) {
+        previewDiv.textContent = 'Enter a template above to see preview...';
+        previewDiv.style.color = '#B0B0B0';
+        return;
+      }
+      
+      // Replace tags with example values
+      let preview = template
+        .replace(/{Brand}/g, 'MyBrand')
+        .replace(/{Campaign}/g, 'Summer2024')
+        .replace(/{Date}/g, 'Aug25')
+        .replace(/{AdSize}/g, '300x250')
+        .replace(/{Language}/g, 'EN')
+        .replace(/{Version}/g, 'v1')
+        .replace(/{Format}/g, 'jpg')
+        .replace(/{Platform}/g, 'Facebook')
+        .replace(/{[^}]+}/g, 'example'); // Replace any other tags
+      
+      previewDiv.textContent = preview;
+      previewDiv.style.color = '#D1D5DB';
+    }
+
+    function saveNamingPreset() {
+      const name = document.getElementById('preset-name').value.trim();
+      const description = document.getElementById('preset-description').value.trim();
+      const template = document.getElementById('naming-template').value.trim();
+      
+      if (!name) {
+        showStatus('Please enter a preset name', 'warning');
+        return;
+      }
+      
+      if (!template) {
+        showStatus('Please enter a naming template', 'warning');
+        return;
+      }
+      
+      const preset = {
+        id: Date.now(),
+        name: name,
+        description: description || 'Naming convention preset',
+        type: 'naming',
+        namingTemplate: template,
+        createdAt: new Date().toISOString()
+      };
+      
+      presets.push(preset);
+      savePresets();
+      renderPresets();
+      
+      // Clear form
+      document.getElementById('preset-name').value = '';
+      document.getElementById('preset-description').value = '';
+      document.getElementById('naming-template').value = '';
+      updateNamingPreview();
+      
+      showStatus(`Naming preset "${name}" saved successfully!`, 'success');
+    }
+
+    // Add event listener for naming template input
+    document.addEventListener('DOMContentLoaded', function() {
+      // Wait for the input to be created, then add listener
+      setTimeout(() => {
+        const templateInput = document.getElementById('naming-template');
+        if (templateInput) {
+          templateInput.addEventListener('input', updateNamingPreview);
+        }
+      }, 100);
+    });
+
+    function showStatus(message, type = 'info') {
+      const container = document.getElementById('status-container');
+      const statusElement = document.createElement('div');
+      statusElement.className = `status-message ${type}`;
+      statusElement.textContent = message;
+      
+      container.appendChild(statusElement);
+      
+      // Trigger show animation
+      setTimeout(() => statusElement.classList.add('show'), 100);
+      
+      // Auto remove after 4 seconds
+      setTimeout(() => {
+        statusElement.classList.remove('show');
+        setTimeout(() => {
+          if (statusElement.parentNode) {
+            statusElement.parentNode.removeChild(statusElement);
+          }
+        }, 300);
+      }, 4000);
+    }
+
+    // MULTIPLE FOLDER SELECTION FUNCTIONS
+    async function selectMultipleFolderLocations() {
+      try {
+        if (!window.electronAPI || !window.electronAPI.selectMultipleFolders) {
+          showStatus('Multiple folder selection not available in this version', 'warning');
+          return;
+        }
+        
+        const result = await window.electronAPI.selectMultipleFolders();
+        
+        if (!result.canceled && result.filePaths && result.filePaths.length > 0) {
+          selectedMultipleFolders = result.filePaths;
+          
+          // Hide single location display
+          document.getElementById('folder-location-display').style.display = 'none';
+          
+          // Show multiple locations display
+          const multipleDisplay = document.getElementById('multiple-locations-display');
+          multipleDisplay.style.display = 'block';
+          multipleDisplay.classList.add('has-location');
+          
+          renderMultipleLocations();
+          updateButtonStates();
+          showStatus(`Selected ${selectedMultipleFolders.length} folders for batch creation`, 'success');
+        }
+      } catch (error) {
+        console.error('Error selecting multiple folders:', error);
+        showStatus('Error selecting multiple folders: ' + error.message, 'error');
+      }
+    }
+
+    function renderMultipleLocations() {
+      const container = document.getElementById('multiple-locations-list');
+      container.innerHTML = selectedMultipleFolders.map(path => 
+        `<div style="font-size: 10px; color: #D1D5DB; margin-bottom: 4px; padding: 4px; background: #151922; border-radius: 4px;">
+          ${getShortPath(path)}
+        </div>`
+      ).join('');
+    }
+
+    function clearMultipleLocations() {
+      selectedMultipleFolders = [];
+      document.getElementById('multiple-locations-display').style.display = 'none';
+      document.getElementById('folder-location-display').style.display = 'block';
+      updateButtonStates();
+      showStatus('Cleared multiple folder selection', 'info');
+    }
+
+    // FOLDER STRUCTURE FUNCTIONS
+    function toggleFolderStructureInputs() {
+      const structureType = document.getElementById('folder-structure-type').value;
+      const simpleInput = document.getElementById('simple-folder-input');
+      const structuredInput = document.getElementById('structured-folder-input');
+      const templateDisplay = document.getElementById('template-selection-display');
+      
+      // Hide all inputs first
+      simpleInput.style.display = 'none';
+      structuredInput.style.display = 'none';
+      templateDisplay.style.display = 'none';
+      
+      // Show appropriate input based on selection
+      if (structureType === 'structured') {
+        structuredInput.style.display = 'block';
+      } else if (structureType === 'template') {
+        templateDisplay.style.display = 'block';
+      } else {
+        simpleInput.style.display = 'block';
+      }
+    }
+
+    function getStructuredFolderNames() {
+      const structureType = document.getElementById('folder-structure-type').value;
+      
+      if (structureType === 'structured') {
+        const rootFolder = document.getElementById('root-folder-name').value.trim();
+        const subFolder1 = document.getElementById('sub-folder-1').value.trim();
+        const subFolder2 = document.getElementById('sub-folder-2').value.trim();
+        const subFolder3 = document.getElementById('sub-folder-3').value.trim();
+        const additionalFolders = document.getElementById('additional-subfolders').value
+          .split('\n').map(name => name.trim()).filter(name => name.length > 0);
+        
+        if (!rootFolder) {
+          throw new Error('Root folder name is required');
+        }
+        
+        let structure = [rootFolder];
+        [subFolder1, subFolder2, subFolder3, ...additionalFolders].forEach(folder => {
+          if (folder) {
+            structure.push(`${rootFolder}/${folder}`);
+          }
+        });
+        
+        return structure;
+      } else if (structureType === 'template') {
+        if (!selectedTemplateId) {
+          throw new Error('Please select a template first');
+        }
+        
+        const template = folderTemplates.find(t => t.id === selectedTemplateId);
+        if (!template || !template.folders || template.folders.length === 0) {
+          throw new Error('Selected template has no folders');
+        }
+        
+        return [...template.folders];
+      } else {
+        return document.getElementById('folder-names').value
+          .split('\n')
+          .map(name => name.trim())
+          .filter(name => name.length > 0);
+      }
+    }
+
+    // TARGET FOLDERS FUNCTIONS
+    async function selectTargetFolders() {
+      try {
+        if (!window.electronAPI || !window.electronAPI.selectMultipleFolders) {
+          showStatus('Multiple folder selection not available', 'warning');
+          return;
+        }
+        
+        const result = await window.electronAPI.selectMultipleFolders();
+        
+        if (!result.canceled && result.filePaths && result.filePaths.length > 0) {
+          targetFolders = result.filePaths;
+          
+          const targetSection = document.getElementById('target-folders-section');
+          targetSection.style.display = 'block';
+          
+          renderTargetFolders();
+          updateButtonStates();
+          showStatus(`Selected ${targetFolders.length} target folders`, 'success');
+        }
+      } catch (error) {
+        console.error('Error selecting target folders:', error);
+        showStatus('Error selecting target folders: ' + error.message, 'error');
+      }
+    }
+
+    function renderTargetFolders() {
+      const container = document.getElementById('target-folders-list');
+      container.innerHTML = targetFolders.map(path => 
+        `<div style="font-size: 10px; color: #D1D5DB; margin-bottom: 4px; padding: 4px; background: #1A1D23; border-radius: 4px;">
+          ${getShortPath(path)}
+        </div>`
+      ).join('');
+    }
+
+    function clearTargetFolders() {
+      targetFolders = [];
+      document.getElementById('target-folders-section').style.display = 'none';
+      showStatus('Cleared target folders', 'info');
+    }
+
+    // FOLDER RENAMING FUNCTIONS
+    let selectedParentPath = null;
+    let currentFolders = [];
+
+    async function selectParentFolder() {
+      try {
+        if (!window.electronAPI || !window.electronAPI.selectFolder) {
+          showStatus('Electron API not available', 'error');
+          return;
+        }
+        
+        const result = await window.electronAPI.selectFolder();
+        console.log('selectParentFolder result:', result);
+        
+        if (!result.canceled && result.filePaths && result.filePaths.length > 0) {
+          selectedParentPath = result.filePaths[0];
+          console.log('Selected parent folder:', selectedParentPath);
+          
+          const locationDisplay = document.getElementById('folder-rename-location-display');
+          const locationPath = document.getElementById('folder-rename-location-path');
+          
+          locationDisplay.classList.add('has-location');
+          locationPath.textContent = getShortPath(selectedParentPath);
+          
+          await loadFoldersFromParent();
+        }
+      } catch (error) {
+        console.error('Error selecting parent folder:', error);
+        showStatus('Error selecting folder: ' + error.message, 'error');
+      }
+    }
+
+    async function loadFoldersFromParent() {
+      try {
+        if (!window.electronAPI || !window.electronAPI.getFiles) {
+          showStatus('Electron API not available', 'error');
+          return;
+        }
+        
+        console.log('Loading folders from:', selectedParentPath);
+        const result = await window.electronAPI.getFiles(selectedParentPath);
+        console.log('getFiles result:', result);
+        
+        if (result && result.success) {
+          // Filter to only show directories
+          currentFolders = result.files.filter(file => file.isDirectory);
+          console.log('Filtered folders:', currentFolders);
+          
+          const folderCount = document.getElementById('folder-count');
+          folderCount.textContent = `${currentFolders.length} folders found`;
+          
+          if (currentFolders.length > 0) {
+            renderFolderList();
+            updateFolderRenameButtons();
+            showStatus(`Found ${currentFolders.length} folders`, 'success');
+          } else {
+            showStatus('No folders found in selected directory', 'warning');
+            document.getElementById('folder-list-section').style.display = 'none';
+            updateFolderRenameButtons();
+          }
+        } else {
+          showStatus('Error loading folders: ' + (result ? result.error : 'Unknown error'), 'error');
+          currentFolders = [];
+          updateFolderRenameButtons();
+        }
+      } catch (error) {
+        console.error('Error loading folders:', error);
+        showStatus('Error loading folders: ' + error.message, 'error');
+        currentFolders = [];
+        updateFolderRenameButtons();
+      }
+    }
+
+    function renderFolderList() {
+      const container = document.getElementById('folder-list');
+      const listSection = document.getElementById('folder-list-section');
+      
+      container.innerHTML = currentFolders.map(folder => 
+        `<div style="padding: 8px; margin-bottom: 4px; background: #1A1D23; border-radius: 4px; color: #D1D5DB; font-size: 11px;">
+          📁 ${folder.name}
+        </div>`
+      ).join('');
+      
+      listSection.style.display = 'block';
+    }
+
+    function updateFolderRenameButtons() {
+      const previewBtn = document.getElementById('preview-folder-rename-btn');
+      const executeBtn = document.getElementById('execute-folder-rename-btn');
+      
+      const hasData = selectedParentPath && currentFolders && currentFolders.length > 0;
+      previewBtn.disabled = !hasData;
+      executeBtn.disabled = !hasData;
+    }
+
+    function previewFolderRename() {
+      if (!selectedParentPath || !currentFolders || currentFolders.length === 0) {
+        showStatus('Please select a parent folder first', 'warning');
+        return;
+      }
+
+      const prefix = document.getElementById('folder-prefix').value;
+      const suffix = document.getElementById('folder-suffix').value;
+      const findText = document.getElementById('folder-find-text').value;
+      const replaceText = document.getElementById('folder-replace-text').value;
+
+      const operations = generateFolderRenameOperations(currentFolders, {
+        prefix: prefix,
+        suffix: suffix,
+        findText: findText,
+        replaceText: replaceText
+      });
+
+      if (operations.length === 0) {
+        showStatus('No folders will be renamed with current settings', 'warning');
+        return;
+      }
+
+      renderFolderPreview(operations);
+      document.getElementById('folder-preview-section').style.display = 'block';
+      showStatus(`Preview generated for ${operations.length} folders`, 'info');
+    }
+
+    function generateFolderRenameOperations(folders, rules) {
+      const operations = [];
+      
+      folders.forEach(folder => {
+        let newName = folder.name;
+        
+        // Apply find/replace
+        if (rules.findText && rules.findText.trim() !== '') {
+          newName = newName.replace(new RegExp(escapeRegExp(rules.findText), 'g'), rules.replaceText || '');
+        }
+        
+        // Apply prefix
+        if (rules.prefix && rules.prefix.trim() !== '') {
+          newName = rules.prefix.trim() + newName;
+        }
+        
+        // Apply suffix
+        if (rules.suffix && rules.suffix.trim() !== '') {
+          newName = newName + rules.suffix.trim();
+        }
+        
+        if (newName !== folder.name) {
+          operations.push({
+            oldPath: folder.path,
+            newPath: window.electronAPI.path.join(selectedParentPath, newName),
+            oldName: folder.name,
+            newName: newName
+          });
+        }
+      });
+      
+      return operations;
+    }
+
+    function renderFolderPreview(operations) {
+      const container = document.getElementById('folder-preview-list');
+      
+      container.innerHTML = operations.map(op => `
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px; margin-bottom: 4px; background: #1A1D23; border-radius: 4px; color: #D1D5DB; font-size: 11px;">
+          <span>📁 ${op.oldName}</span>
+          <span style="color: #6B7280;">→</span>
+          <span style="color: #10B981;">📁 ${op.newName}</span>
+        </div>
+      `).join('');
+    }
+
+    async function executeFolderRename() {
+      if (!selectedParentPath || !currentFolders || currentFolders.length === 0) {
+        showStatus('Please select a parent folder first', 'warning');
+        return;
+      }
+
+      const prefix = document.getElementById('folder-prefix').value;
+      const suffix = document.getElementById('folder-suffix').value;
+      const findText = document.getElementById('folder-find-text').value;
+      const replaceText = document.getElementById('folder-replace-text').value;
+
+      const operations = generateFolderRenameOperations(currentFolders, {
+        prefix: prefix,
+        suffix: suffix,
+        findText: findText,
+        replaceText: replaceText
+      });
+
+      if (operations.length === 0) {
+        showStatus('No folders to rename with current settings', 'warning');
+        return;
+      }
+
+      if (!confirm(`Are you sure you want to rename ${operations.length} folders? This cannot be undone.`)) {
+        return;
+      }
+
+      try {
+        const executeBtn = document.getElementById('execute-folder-rename-btn');
+        executeBtn.innerHTML = '<span class="spinner"></span> Renaming...';
+        executeBtn.disabled = true;
+
+        const result = await window.electronAPI.renameFolders(operations, selectedParentPath);
+        
+        if (result.success) {
+          const successCount = result.results.filter(r => r.success).length;
+          showStatus(`Successfully renamed ${successCount} folders!`, 'success');
+          
+          // Clear form
+          document.getElementById('folder-prefix').value = '';
+          document.getElementById('folder-suffix').value = '';
+          document.getElementById('folder-find-text').value = '';
+          document.getElementById('folder-replace-text').value = '';
+          
+          // Refresh folder list
+          await loadFoldersFromParent();
+          document.getElementById('folder-preview-section').style.display = 'none';
+        } else {
+          showStatus('Error renaming folders: ' + result.error, 'error');
+        }
+      } catch (error) {
+        console.error('Error executing folder rename:', error);
+        showStatus('Error renaming folders: ' + error.message, 'error');
+      } finally {
+        const executeBtn = document.getElementById('execute-folder-rename-btn');
+        executeBtn.innerHTML = 'Execute Rename';
+        updateFolderRenameButtons();
+      }
+    }
+
+    // CUSTOM TAGS FUNCTIONS
+    function renderQuickTags() {
+      const container = document.getElementById('quick-tags-container');
+      container.innerHTML = customTags.map(tag => 
+        `<button type="button" class="btn" style="height: 28px; padding: 0 10px; font-size: 9px; background: #E8F2FF; color: #1A1D23; border: 1px solid #4A90E2;" onclick="insertTag('${tag}')">${tag}</button>`
+      ).join('');
+    }
+
+    function addCustomTag() {
+      const tagName = prompt('Enter new tag name:');
+      if (tagName && tagName.trim() && !customTags.includes(tagName.trim())) {
+        customTags.push(tagName.trim());
+        saveCustomTags();
+        renderQuickTags();
+        showStatus(`Added custom tag: ${tagName}`, 'success');
+      } else if (customTags.includes(tagName?.trim())) {
+        showStatus('Tag already exists', 'warning');
+      }
+    }
+
+    function manageCustomTags() {
+      document.getElementById('tag-management-modal').style.display = 'block';
+      renderExistingTags();
+    }
+
+    function renderExistingTags() {
+      const container = document.getElementById('existing-tags-list');
+      container.innerHTML = customTags.map((tag, index) => 
+        `<div style="display: flex; justify-content: space-between; align-items: center; padding: 8px; margin-bottom: 4px; background: #151922; border-radius: 4px;">
+          <span style="color: #D1D5DB; font-size: 11px;">${tag}</span>
+          <div style="display: flex; gap: 4px;">
+            <button class="btn btn-outline" style="height: 24px; padding: 0 8px; font-size: 9px;" onclick="editCustomTag(${index})">Edit</button>
+            <button class="btn btn-danger" style="height: 24px; padding: 0 8px; font-size: 9px;" onclick="removeCustomTag(${index})">Remove</button>
+          </div>
+        </div>`
+      ).join('');
+    }
+
+    function saveNewTag() {
+      const input = document.getElementById('new-tag-input');
+      const tagName = input.value.trim();
+      
+      if (tagName && !customTags.includes(tagName)) {
+        customTags.push(tagName);
+        input.value = '';
+        saveCustomTags();
+        renderQuickTags();
+        renderExistingTags();
+        showStatus(`Added tag: ${tagName}`, 'success');
+      } else if (customTags.includes(tagName)) {
+        showStatus('Tag already exists', 'warning');
+      } else {
+        showStatus('Please enter a tag name', 'warning');
+      }
+    }
+
+    function editCustomTag(index) {
+      console.log('editCustomTag called with index:', index, 'customTags:', customTags);
+      const currentTag = customTags[index];
+      console.log('Editing tag:', currentTag);
+      const newTag = prompt(`Edit tag "${currentTag}":`, currentTag);
+      
+      if (newTag && newTag.trim() && newTag.trim() !== currentTag) {
+        const trimmedTag = newTag.trim();
+        if (customTags.includes(trimmedTag)) {
+          showStatus('Tag already exists', 'warning');
+          return;
+        }
+        
+        customTags[index] = trimmedTag;
+        saveCustomTags();
+        renderQuickTags();
+        renderExistingTags();
+        showStatus(`Updated tag from "${currentTag}" to "${trimmedTag}"`, 'success');
+      }
+    }
+
+    function removeCustomTag(index) {
+      const tag = customTags[index];
+      customTags.splice(index, 1);
+      saveCustomTags();
+      renderQuickTags();
+      renderExistingTags();
+      showStatus(`Removed tag: ${tag}`, 'info');
+    }
+
+    function closeTagManagement() {
+      document.getElementById('tag-management-modal').style.display = 'none';
+    }
+
+    function saveCustomTags() {
+      if (window.electronAPI && window.electronAPI.saveCustomTags) {
+        window.electronAPI.saveCustomTags(customTags);
+      } else {
+        localStorage.setItem('folderpilot-custom-tags', JSON.stringify(customTags));
+      }
+    }
+
+    async function loadCustomTags() {
+      try {
+        if (window.electronAPI && window.electronAPI.loadCustomTags) {
+          const result = await window.electronAPI.loadCustomTags();
+          if (result.success && result.tags) {
+            customTags = result.tags;
+          }
+        } else {
+          const saved = localStorage.getItem('folderpilot-custom-tags');
+          if (saved) {
+            customTags = JSON.parse(saved);
+          }
+        }
+      } catch (error) {
+        console.error('Error loading custom tags:', error);
+      }
+    }
+
+    // PRESET STORAGE
+    function savePresets() {
+      if (window.electronAPI && window.electronAPI.savePresets) {
+        window.electronAPI.savePresets(presets)
+          .then(result => {
+            if (!result.success) {
+              console.error('Failed to save presets:', result.error);
+            }
+          })
+          .catch(error => {
+            console.error('Error saving presets:', error);
+          });
+      }
+    }
+
+    async function loadPresets() {
+      try {
+        if (window.electronAPI && window.electronAPI.loadPresets) {
+          const result = await window.electronAPI.loadPresets();
+          if (result.success) {
+            presets = result.presets || [];
+          } else {
+            console.error('Failed to load presets:', result.error);
+            presets = [];
+          }
+        } else {
+          presets = [];
+        }
+      } catch (error) {
+        console.error('Error loading presets:', error);
+        presets = [];
+      }
+    }
+
+    // FOLDER TEMPLATE MANAGEMENT FUNCTIONS
+
+    // Template Storage Functions
+    async function loadFolderTemplates() {
+      try {
+        if (window.electronAPI && window.electronAPI.loadPresets) {
+          const result = await window.electronAPI.loadPresets();
+          if (result.success && result.presets) {
+            folderTemplates = result.presets.filter(p => p.type === 'folder_template') || [];
+          }
+        }
+      } catch (error) {
+        console.error('Error loading folder templates:', error);
+        folderTemplates = [];
+      }
+    }
+
+    async function saveFolderTemplates() {
+      try {
+        // Merge templates back with regular presets
+        const otherPresets = presets.filter(p => p.type !== 'folder_template');
+        const allPresets = [...otherPresets, ...folderTemplates];
+        
+        if (window.electronAPI && window.electronAPI.savePresets) {
+          const result = await window.electronAPI.savePresets(allPresets);
+          if (result.success) {
+            presets = allPresets; // Update the main presets array
+          }
+          return result;
+        }
+      } catch (error) {
+        console.error('Error saving folder templates:', error);
+        return { success: false, error: error.message };
+      }
+    }
+
+    // Template Modal Functions
+    function showTemplateSelector() {
+      document.getElementById('template-selector-modal').style.display = 'block';
+      renderTemplateSelector();
+    }
+
+    function closeTemplateSelector() {
+      document.getElementById('template-selector-modal').style.display = 'none';
+      selectedTemplateId = null;
+      document.getElementById('apply-template-btn').disabled = true;
+    }
+
+    function showTemplateEditor(templateId = null) {
+      editingTemplateId = templateId;
+      currentTemplateFolders = [];
+      
+      if (templateId) {
+        // Edit existing template
+        const template = folderTemplates.find(t => t.id === templateId);
+        if (template) {
+          document.getElementById('template-editor-title').textContent = 'Edit Template';
+          document.getElementById('template-editor-name').value = template.name || '';
+          document.getElementById('template-editor-description').value = template.description || '';
+          currentTemplateFolders = [...(template.folders || [])];
+          document.getElementById('delete-template-btn').style.display = 'inline-flex';
+        }
+      } else {
+        // Create new template
+        document.getElementById('template-editor-title').textContent = 'Create New Template';
+        document.getElementById('template-editor-name').value = '';
+        document.getElementById('template-editor-description').value = '';
+        document.getElementById('delete-template-btn').style.display = 'none';
+      }
+      
+      document.getElementById('template-editor-modal').style.display = 'block';
+      renderTemplateFoldersList();
+    }
+
+    function closeTemplateEditor() {
+      document.getElementById('template-editor-modal').style.display = 'none';
+      editingTemplateId = null;
+      currentTemplateFolders = [];
+      clearTemplateEditorInputs();
+    }
+
+    function clearTemplateEditorInputs() {
+      document.getElementById('template-editor-name').value = '';
+      document.getElementById('template-editor-description').value = '';
+      document.getElementById('new-folder-name').value = '';
+      document.getElementById('bulk-folder-input').value = '';
+    }
+
+    // Template Rendering Functions
+    function renderTemplateSelector() {
+      const container = document.getElementById('template-selector-list');
+      const searchTerm = document.getElementById('template-search').value.toLowerCase();
+      
+      const filteredTemplates = folderTemplates.filter(template => 
+        template.name.toLowerCase().includes(searchTerm) || 
+        (template.description && template.description.toLowerCase().includes(searchTerm))
+      );
+      
+      if (filteredTemplates.length === 0) {
+        container.innerHTML = `
+          <div class="folder-list-empty">
+            ${folderTemplates.length === 0 ? 'No templates created yet.' : 'No templates match your search.'}
+          </div>
+        `;
+        return;
+      }
+      
+      container.innerHTML = filteredTemplates.map(template => {
+        const folderPreview = template.folders ? template.folders.slice(0, 5).join(', ') + 
+          (template.folders.length > 5 ? `... (+${template.folders.length - 5} more)` : '') : 'No folders';
+        const createdDate = new Date(template.createdAt).toLocaleDateString();
+        
+        return `
+          <div class="template-item ${selectedTemplateId === template.id ? 'selected' : ''}" 
+               onclick="selectTemplate(${template.id})">
+            <div class="template-name">${template.name}</div>
+            <div class="template-description">${template.description || 'No description'}</div>
+            <div class="template-preview">${folderPreview}</div>
+            <div class="template-meta">
+              <span>${template.folders ? template.folders.length : 0} folders</span>
+              <span>Created: ${createdDate}</span>
+              <button class="btn btn-outline" style="height: 24px; padding: 0 8px; font-size: 9px; margin-left: 8px;" 
+                      onclick="event.stopPropagation(); showTemplateEditor(${template.id})">Edit</button>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function renderTemplateFoldersList() {
+      const container = document.getElementById('template-folders-list');
+      
+      if (currentTemplateFolders.length === 0) {
+        container.innerHTML = '<div class="folder-list-empty">No folders added yet. Add folders using the input above or bulk import.</div>';
+        return;
+      }
+      
+      container.innerHTML = currentTemplateFolders.map((folder, index) => `
+        <div class="folder-list-item" draggable="true" ondragstart="handleDragStart(event, ${index})" 
+             ondragover="handleDragOver(event)" ondrop="handleDrop(event, ${index})">
+          <span class="folder-name">${folder}</span>
+          <div class="folder-actions">
+            <button class="move-btn" onclick="moveFolderUp(${index})" ${index === 0 ? 'disabled' : ''}>↑</button>
+            <button class="move-btn" onclick="moveFolderDown(${index})" ${index === currentTemplateFolders.length - 1 ? 'disabled' : ''}>↓</button>
+            <button class="remove-btn" onclick="removeFolderFromTemplate(${index})">×</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Template Interaction Functions
+    function selectTemplate(templateId) {
+      selectedTemplateId = templateId;
+      document.getElementById('apply-template-btn').disabled = false;
+      renderTemplateSelector();
+    }
+
+    function filterTemplates() {
+      renderTemplateSelector();
+    }
+
+    function applySelectedTemplate() {
+      if (!selectedTemplateId) return;
+      
+      const template = folderTemplates.find(t => t.id === selectedTemplateId);
+      if (!template) return;
+      
+      // Set folder structure type to template
+      document.getElementById('folder-structure-type').value = 'template';
+      toggleFolderStructureInputs();
+      
+      // Update template display
+      document.getElementById('selected-template-display').classList.add('has-location');
+      document.getElementById('selected-template-name').textContent = `${template.name} (${template.folders ? template.folders.length : 0} folders)`;
+      
+      closeTemplateSelector();
+      showStatus(`Template "${template.name}" selected`, 'success');
+    }
+
+    function clearSelectedTemplate() {
+      selectedTemplateId = null;
+      document.getElementById('selected-template-display').classList.remove('has-location');
+      document.getElementById('selected-template-name').textContent = 'Click "Load Template" to choose a template';
+      
+      // Switch back to simple mode
+      document.getElementById('folder-structure-type').value = 'simple';
+      toggleFolderStructureInputs();
+      
+      showStatus('Template cleared', 'info');
+    }
+
+    // Template Editing Functions
+    function addFolderToTemplate() {
+      const folderName = document.getElementById('new-folder-name').value.trim();
+      if (!folderName) {
+        showStatus('Please enter a folder name', 'warning');
+        return;
+      }
+      
+      if (currentTemplateFolders.includes(folderName)) {
+        showStatus('Folder already exists in template', 'warning');
+        return;
+      }
+      
+      currentTemplateFolders.push(folderName);
+      document.getElementById('new-folder-name').value = '';
+      renderTemplateFoldersList();
+    }
+
+    function handleFolderNameKeyPress(event) {
+      if (event.key === 'Enter') {
+        addFolderToTemplate();
+      }
+    }
+
+    function removeFolderFromTemplate(index) {
+      currentTemplateFolders.splice(index, 1);
+      renderTemplateFoldersList();
+    }
+
+    function moveFolderUp(index) {
+      if (index > 0) {
+        const item = currentTemplateFolders.splice(index, 1)[0];
+        currentTemplateFolders.splice(index - 1, 0, item);
+        renderTemplateFoldersList();
+      }
+    }
+
+    function moveFolderDown(index) {
+      if (index < currentTemplateFolders.length - 1) {
+        const item = currentTemplateFolders.splice(index, 1)[0];
+        currentTemplateFolders.splice(index + 1, 0, item);
+        renderTemplateFoldersList();
+      }
+    }
+
+    function importBulkFolders() {
+      const bulkText = document.getElementById('bulk-folder-input').value.trim();
+      if (!bulkText) {
+        showStatus('Please enter folder names to import', 'warning');
+        return;
+      }
+      
+      const folders = bulkText.split('\n')
+        .map(name => name.trim())
+        .filter(name => name.length > 0 && !currentTemplateFolders.includes(name));
+      
+      if (folders.length === 0) {
+        showStatus('No new folders to import', 'warning');
+        return;
+      }
+      
+      currentTemplateFolders.push(...folders);
+      document.getElementById('bulk-folder-input').value = '';
+      renderTemplateFoldersList();
+      showStatus(`Imported ${folders.length} folders`, 'success');
+    }
+
+    function clearTemplateEditor() {
+      if (currentTemplateFolders.length > 0) {
+        if (confirm('Are you sure you want to clear all folders?')) {
+          currentTemplateFolders = [];
+          renderTemplateFoldersList();
+        }
+      }
+    }
+
+    // Drag and Drop Functions
+    let draggedIndex = null;
+
+    function handleDragStart(event, index) {
+      draggedIndex = index;
+      event.dataTransfer.effectAllowed = 'move';
+    }
+
+    function handleDragOver(event) {
+      event.preventDefault();
+      event.dataTransfer.dropEffect = 'move';
+    }
+
+    function handleDrop(event, targetIndex) {
+      event.preventDefault();
+      
+      if (draggedIndex !== null && draggedIndex !== targetIndex) {
+        const item = currentTemplateFolders.splice(draggedIndex, 1)[0];
+        currentTemplateFolders.splice(targetIndex, 0, item);
+        renderTemplateFoldersList();
+      }
+      
+      draggedIndex = null;
+    }
+
+    // Template CRUD Operations
+    async function saveTemplate() {
+      const name = document.getElementById('template-editor-name').value.trim();
+      const description = document.getElementById('template-editor-description').value.trim();
+      
+      if (!name) {
+        showStatus('Please enter a template name', 'warning');
+        return;
+      }
+      
+      if (currentTemplateFolders.length === 0) {
+        showStatus('Please add at least one folder to the template', 'warning');
+        return;
+      }
+      
+      try {
+        const template = {
+          id: editingTemplateId || Date.now(),
+          name: name,
+          description: description || '',
+          type: 'folder_template',
+          folders: [...currentTemplateFolders],
+          createdAt: editingTemplateId ? 
+            folderTemplates.find(t => t.id === editingTemplateId)?.createdAt || new Date().toISOString() : 
+            new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          isEditable: true
+        };
+        
+        if (editingTemplateId) {
+          // Update existing template
+          const index = folderTemplates.findIndex(t => t.id === editingTemplateId);
+          if (index !== -1) {
+            folderTemplates[index] = template;
+          }
+        } else {
+          // Add new template
+          folderTemplates.push(template);
+        }
+        
+        const result = await saveFolderTemplates();
+        if (result && result.success !== false) {
+          showStatus(`Template "${name}" saved successfully!`, 'success');
+          closeTemplateEditor();
+          renderPresets(); // Update the presets display too
+        } else {
+          showStatus('Error saving template: ' + (result?.error || 'Unknown error'), 'error');
+        }
+      } catch (error) {
+        showStatus('Error saving template: ' + error.message, 'error');
+      }
+    }
+
+    async function deleteCurrentTemplate() {
+      if (!editingTemplateId) return;
+      
+      const template = folderTemplates.find(t => t.id === editingTemplateId);
+      if (!template) return;
+      
+      if (!confirm(`Are you sure you want to delete the template "${template.name}"?`)) {
+        return;
+      }
+      
+      try {
+        folderTemplates = folderTemplates.filter(t => t.id !== editingTemplateId);
+        const result = await saveFolderTemplates();
+        
+        if (result && result.success !== false) {
+          showStatus(`Template "${template.name}" deleted`, 'info');
+          closeTemplateEditor();
+          renderPresets();
+          
+          // Clear selection if this template was selected
+          if (selectedTemplateId === editingTemplateId) {
+            clearSelectedTemplate();
+          }
+        } else {
+          showStatus('Error deleting template: ' + (result?.error || 'Unknown error'), 'error');
+        }
+      } catch (error) {
+        showStatus('Error deleting template: ' + error.message, 'error');
+      }
+    }
+
+    // Import/Export Functions
+    function exportFolderTemplates() {
+      if (folderTemplates.length === 0) {
+        showStatus('No templates to export', 'warning');
+        return;
+      }
+      
+      const dataStr = JSON.stringify(folderTemplates, null, 2);
+      const dataBlob = new Blob([dataStr], {type: 'application/json'});
+      const url = URL.createObjectURL(dataBlob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `folderpilot-templates-${new Date().toISOString().split('T')[0]}.json`;
+      link.click();
+      URL.revokeObjectURL(url);
+      showStatus('Templates exported successfully!', 'success');
+    }
+
+    function importFolderTemplates() {
+      const fileInput = document.getElementById('file-input');
+      fileInput.onchange = handleTemplateImport;
+      fileInput.click();
+    }
+
+    function handleTemplateImport(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        try {
+          const importedTemplates = JSON.parse(e.target.result);
+          
+          if (!Array.isArray(importedTemplates)) {
+            throw new Error('Invalid format: expected an array of templates');
+          }
+          
+          // Validate template structure
+          importedTemplates.forEach((template, index) => {
+            if (!template.name || !template.folders || !Array.isArray(template.folders)) {
+              throw new Error(`Invalid template at index ${index}: missing name or folders array`);
+            }
+          });
+          
+          // Merge with existing templates (avoid duplicates by name)
+          const existingNames = folderTemplates.map(t => t.name);
+          const newTemplates = importedTemplates.filter(t => !existingNames.includes(t.name));
+          
+          // Ensure templates have the correct type and properties
+          const processedTemplates = newTemplates.map(t => ({
+            ...t,
+            id: t.id || Date.now() + Math.random(),
+            type: 'folder_template',
+            isEditable: true,
+            createdAt: t.createdAt || new Date().toISOString()
+          }));
+          
+          folderTemplates.push(...processedTemplates);
+          saveFolderTemplates();
+          renderPresets();
+          
+          showStatus(`Imported ${processedTemplates.length} new templates!`, 'success');
+        } catch (error) {
+          showStatus('Error importing templates: ' + error.message, 'error');
+        }
+      };
+      reader.readAsText(file);
+    }
+
+  </script>
+</body>
+</html>
