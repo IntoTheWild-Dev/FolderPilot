@@ -14,14 +14,21 @@
     "build-win-portable": "electron-builder --win --config.win.target=portable --config.compression=store",
     "dist": "electron-builder --publish=never"
   },
-  "dependencies": {},
+  "dependencies": {
+    "electron-updater": "^6.7.3"
+  },
   "devDependencies": {
     "electron": "^29.0.0",
     "electron-builder": "^24.13.1"
   },
   "build": {
-    "appId": "com.yourcompany.folderpilot",
+    "appId": "com.intothewild.folderpilot",
     "productName": "FolderPilot",
+    "publish": {
+      "provider": "github",
+      "owner": "IntoTheWild-Dev",
+      "repo": "FolderPilot"
+    },
     "directories": {
       "output": "dist"
     },
@@ -36,7 +43,9 @@
       {
         "from": "renderer/assets",
         "to": "renderer/assets",
-        "filter": ["**/*"]
+        "filter": [
+          "**/*"
+        ]
       }
     ],
     "mac": {
@@ -44,7 +53,10 @@
       "target": [
         {
           "target": "dmg",
-          "arch": ["x64", "arm64"]
+          "arch": [
+            "x64",
+            "arm64"
+          ]
         }
       ],
       "icon": "assets/icon.icns"
@@ -53,7 +65,9 @@
       "target": [
         {
           "target": "nsis",
-          "arch": ["x64"]
+          "arch": [
+            "x64"
+          ]
         }
       ],
       "sign": null

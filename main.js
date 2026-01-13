@@ -1,9 +1,15 @@
 const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+const { autoUpdater } = require('electron-updater');
 const path = require('path');
 const fs = require('fs').promises;
 const fsSync = require('fs');
 
 let mainWindow;
+
+// Auto-updater configuration
+autoUpdater.logger = console;
+autoUpdater.autoDownload = false;
+autoUpdater.autoInstallOnAppQuit = true;
 
 // Window state management
 const defaultWindowState = {
@@ -103,7 +109,64 @@ function createWindow() {
   mainWindow.on('close', saveWindowState);
 }
 
-app.whenReady().then(createWindow);
+// Auto-updater events
+autoUpdater.on('checking-for-update', () => {
+  console.log('Checking for updates...');
+});
+
+autoUpdater.on('update-available', (info) => {
+  console.log('Update available:', info);
+  dialog.showMessageBox(mainWindow, {
+    type: 'info',
+    title: 'Update Available',
+    message: 'A new version is available. Do you want to download it now?',
+    buttons: ['Download', 'Later']
+  }).then((result) => {
+    if (result.response === 0) {
+      autoUpdater.downloadUpdate();
+    }
+  });
+});
+
+autoUpdater.on('update-not-available', (info) => {
+  console.log('Update not available:', info);
+});
+
+autoUpdater.on('error', (err) => {
+  console.error('Error in auto-updater:', err);
+});
+
+autoUpdater.on('download-progress', (progressObj) => {
+  let message = `Download speed: ${progressObj.bytesPerSecond} - Downloaded ${progressObj.percent}%`;
+  console.log(message);
+});
+
+autoUpdater.on('update-downloaded', (info) => {
+  console.log('Update downloaded:', info);
+  dialog.showMessageBox(mainWindow, {
+    type: 'info',
+    title: 'Update Ready',
+    message: 'Update downloaded. The application will restart to install the update.',
+    buttons: ['Restart Now', 'Later']
+  }).then((result) => {
+    if (result.response === 0) {
+      autoUpdater.quitAndInstall(false, true);
+    }
+  });
+});
+
+function checkForUpdates() {
+  // Only check for updates in production
+  if (process.env.NODE_ENV !== 'development') {
+    autoUpdater.checkForUpdates();
+  }
+}
+
+app.whenReady().then(() => {
+  createWindow();
+  // Check for updates 3 seconds after app start
+  setTimeout(checkForUpdates, 3000);
+});
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
