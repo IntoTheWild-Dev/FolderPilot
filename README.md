@@ -65,4 +65,8 @@ Updates are seamless and require just one click.
 
 ## License
 
-All rights reserved.
+Copyright © 2026 IntoTheWild-Dev. All rights reserved.
+
+This software is proprietary and licensed for authorized users only. See [LICENSE](LICENSE) for full terms.
+
+For licensing inquiries, contact your account manager.
