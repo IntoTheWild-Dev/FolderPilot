@@ -14,7 +14,6 @@ Electron-based folder and file management application for Mac and Windows.
 ## Documentation
 
 - [Template System Guide](TEMPLATE_GUIDE.md) - Learn how to create, edit, and share folder templates
-- [Color Guide](FolderPilot-Color-Guide.md) - Design system and color palette reference
 
 ## Development
 
