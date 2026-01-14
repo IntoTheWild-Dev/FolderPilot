@@ -19,7 +19,8 @@
   },
   "devDependencies": {
     "electron": "^29.0.0",
-    "electron-builder": "^24.13.1"
+    "electron-builder": "^24.13.1",
+    "png-to-ico": "^3.0.1"
   },
   "build": {
     "appId": "com.intothewild.folderpilot",
@@ -70,6 +71,7 @@
           ]
         }
       ],
+      "icon": "assets/icon.ico",
       "sign": null
     },
     "nsis": {
