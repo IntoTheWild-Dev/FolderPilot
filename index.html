@@ -1218,9 +1218,15 @@
       <!-- Folder List Editor -->
       <div class="form-group">
         <label class="form-label">Folder Names</label>
-        <div style="display: flex; gap: 8px; margin-bottom: 8px;">
-          <input type="text" id="new-folder-name" class="form-input" placeholder="Enter folder name" style="flex: 1;" onkeypress="handleFolderNameKeyPress(event)">
-          <button class="btn btn-secondary" onclick="addFolderToTemplate()">Add</button>
+        <div style="display: flex; gap: 8px; margin-bottom: 8px; flex-wrap: wrap;">
+          <input type="text" id="new-folder-name" class="form-input" placeholder="Enter folder name" style="flex: 1; min-width: 200px;" onkeypress="handleFolderNameKeyPress(event)">
+          <select id="parent-folder-selector" class="form-input" style="width: 180px;">
+            <option value="">Add as Root Folder</option>
+          </select>
+          <button class="btn btn-secondary" onclick="addFolderToTemplate()" style="white-space: nowrap;">Add Folder</button>
+        </div>
+        <div style="font-size: 10px; color: #9CA3AF; margin-bottom: 8px;">
+          Tip: Select a parent folder to create subfolders, or keep "Root Folder" to create top-level folders
         </div>
         <div id="template-folders-list" style="background: #151922; border: 1px solid #6B7280; border-radius: 8px; padding: 12px; min-height: 200px; max-height: 300px; overflow-y: auto;">
           <!-- Folder list will be rendered here -->
@@ -2945,7 +2951,8 @@
 
     function closeTemplateSelector() {
       document.getElementById('template-selector-modal').style.display = 'none';
-      selectedTemplateId = null;
+      // Don't clear selectedTemplateId here - it's needed for folder creation
+      // It will be cleared only when explicitly clearing the template or switching modes
       document.getElementById('apply-template-btn').disabled = true;
     }
 
@@ -3032,23 +3039,44 @@
 
     function renderTemplateFoldersList() {
       const container = document.getElementById('template-folders-list');
-      
+      const parentSelector = document.getElementById('parent-folder-selector');
+
       if (currentTemplateFolders.length === 0) {
         container.innerHTML = '<div class="folder-list-empty">No folders added yet. Add folders using the input above or bulk import.</div>';
+        parentSelector.innerHTML = '<option value="">Add as Root Folder</option>';
         return;
       }
-      
-      container.innerHTML = currentTemplateFolders.map((folder, index) => `
-        <div class="folder-list-item" draggable="true" ondragstart="handleDragStart(event, ${index})" 
-             ondragover="handleDragOver(event)" ondrop="handleDrop(event, ${index})">
-          <span class="folder-name">${folder}</span>
-          <div class="folder-actions">
-            <button class="move-btn" onclick="moveFolderUp(${index})" ${index === 0 ? 'disabled' : ''}>↑</button>
-            <button class="move-btn" onclick="moveFolderDown(${index})" ${index === currentTemplateFolders.length - 1 ? 'disabled' : ''}>↓</button>
-            <button class="remove-btn" onclick="removeFolderFromTemplate(${index})">×</button>
+
+      // Update parent folder selector with root folders
+      const rootFolders = currentTemplateFolders.filter(f => !f.includes('/'));
+      const currentParent = parentSelector.value;
+      parentSelector.innerHTML = '<option value="">Add as Root Folder</option>' +
+        rootFolders.map(folder => `<option value="${folder}" ${currentParent === folder ? 'selected' : ''}>${folder}/</option>`).join('');
+
+      // Render folders with hierarchy
+      container.innerHTML = currentTemplateFolders.map((folder, index) => {
+        const isRoot = !folder.includes('/');
+        const indentLevel = (folder.match(/\//g) || []).length;
+        const displayName = isRoot ? folder : folder.split('/').pop();
+        const folderIcon = isRoot ? '📁' : '📄';
+
+        return `
+          <div class="folder-list-item" draggable="true" ondragstart="handleDragStart(event, ${index})"
+               ondragover="handleDragOver(event)" ondrop="handleDrop(event, ${index})"
+               style="margin-left: ${indentLevel * 20}px; ${!isRoot ? 'border-left: 2px solid #4A90E2; padding-left: 8px;' : ''}">
+            <span class="folder-name" style="display: flex; align-items: center; gap: 6px;">
+              <span style="font-size: 14px;">${folderIcon}</span>
+              <span>${displayName}</span>
+              ${!isRoot ? `<span style="font-size: 9px; color: #6B7280;">(in ${folder.substring(0, folder.lastIndexOf('/'))})</span>` : ''}
+            </span>
+            <div class="folder-actions">
+              <button class="move-btn" onclick="moveFolderUp(${index})" ${index === 0 ? 'disabled' : ''}>↑</button>
+              <button class="move-btn" onclick="moveFolderDown(${index})" ${index === currentTemplateFolders.length - 1 ? 'disabled' : ''}>↓</button>
+              <button class="remove-btn" onclick="removeFolderFromTemplate(${index})">×</button>
+            </div>
           </div>
-        </div>
-      `).join('');
+        `;
+      }).join('');
     }
 
     // Template Interaction Functions
@@ -3095,19 +3123,39 @@
     // Template Editing Functions
     function addFolderToTemplate() {
       const folderName = document.getElementById('new-folder-name').value.trim();
+      const parentFolder = document.getElementById('parent-folder-selector').value;
+
       if (!folderName) {
         showStatus('Please enter a folder name', 'warning');
         return;
       }
-      
-      if (currentTemplateFolders.includes(folderName)) {
+
+      // Construct the full folder path
+      const fullPath = parentFolder ? `${parentFolder}/${folderName}` : folderName;
+
+      if (currentTemplateFolders.includes(fullPath)) {
         showStatus('Folder already exists in template', 'warning');
         return;
       }
-      
-      currentTemplateFolders.push(folderName);
+
+      // Insert the folder in the right position (after its parent if it has one)
+      if (parentFolder) {
+        // Find the last child of this parent or the parent itself
+        let insertIndex = currentTemplateFolders.length;
+        for (let i = currentTemplateFolders.length - 1; i >= 0; i--) {
+          if (currentTemplateFolders[i] === parentFolder || currentTemplateFolders[i].startsWith(parentFolder + '/')) {
+            insertIndex = i + 1;
+            break;
+          }
+        }
+        currentTemplateFolders.splice(insertIndex, 0, fullPath);
+      } else {
+        currentTemplateFolders.push(fullPath);
+      }
+
       document.getElementById('new-folder-name').value = '';
       renderTemplateFoldersList();
+      showStatus(`Added ${parentFolder ? 'subfolder' : 'root folder'}: ${folderName}`, 'success');
     }
 
     function handleFolderNameKeyPress(event) {
