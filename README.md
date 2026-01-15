@@ -39,26 +39,26 @@ Professional folder and file management application for Mac and Windows.
 
 ## macOS Security Note
 
-When you first try to open FolderPilot on macOS, you may see a message saying the app "is damaged and can't be opened" or that it's from an "unidentified developer." This is because the app is not yet signed with an Apple Developer certificate.
+When you first try to open FolderPilot on macOS, you'll see a message saying the app **"is damaged and can't be opened."** This is normal for apps not signed with an Apple Developer certificate ($99/year).
 
-### Step 1: Allow the App to Open
+### How to Install (One-Time Setup)
 
-**Option A: System Settings (Recommended)**
-1. Go to **System Settings** > **Privacy & Security**
-2. Scroll down to find the message about FolderPilot being blocked
-3. Click **"Open Anyway"**
+**After dragging FolderPilot to Applications, open Terminal and run:**
 
-**Option B: Right-Click to Open**
-1. Right-click (or Control-click) on FolderPilot in your Applications folder
-2. Select "Open" from the menu
-3. Click "Open" in the dialog that appears
-
-**Option C: Terminal Command**
-If the above methods don't work, open Terminal and run:
 ```bash
 xattr -cr /Applications/FolderPilot.app
 ```
-Then launch the app normally.
+
+**That's it!** Now double-click FolderPilot to open it normally.
+
+<details>
+<summary>📋 How to open Terminal</summary>
+
+1. Press **Cmd + Space** to open Spotlight
+2. Type **Terminal** and press Enter
+3. Copy and paste the command above, then press Enter
+
+</details>
 
 ### Step 2: Grant Full Disk Access (If Needed)
 
