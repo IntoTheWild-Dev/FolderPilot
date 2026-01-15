@@ -1,0 +1,33 @@
+╔══════════════════════════════════════════════════════════════════╗
+║           FOLDERPILOT - MAC INSTALLATION INSTRUCTIONS            ║
+╚══════════════════════════════════════════════════════════════════╝
+
+STEP 1: Drag FolderPilot to your Applications folder
+        (You probably already did this!)
+
+STEP 2: Open Terminal and run this command:
+
+        xattr -cr /Applications/FolderPilot.app
+
+        HOW TO OPEN TERMINAL:
+        • Press Cmd + Space
+        • Type "Terminal"
+        • Press Enter
+        • Copy and paste the command above
+        • Press Enter
+
+STEP 3: Double-click FolderPilot in Applications - it will now open!
+
+──────────────────────────────────────────────────────────────────
+
+WHY IS THIS NEEDED?
+
+macOS shows "FolderPilot is damaged" for apps not signed with an
+Apple Developer certificate ($99/year). The command above simply
+tells macOS to trust the app. This is a one-time setup.
+
+──────────────────────────────────────────────────────────────────
+
+NEED HELP? Visit: https://github.com/IntoTheWild-Dev/FolderPilot
+
+Copyright © 2026 IntoTheWild

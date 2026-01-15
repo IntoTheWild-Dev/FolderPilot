@@ -1,6 +1,6 @@
 {
   "name": "folderpilot",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Folder and file management tool",
   "main": "main.js",
   "author": "IntoTheWild",
@@ -62,6 +62,30 @@
         }
       ],
       "icon": "assets/icon.icns"
+    },
+    "dmg": {
+      "contents": [
+        {
+          "x": 130,
+          "y": 220
+        },
+        {
+          "x": 410,
+          "y": 220,
+          "type": "link",
+          "path": "/Applications"
+        },
+        {
+          "x": 270,
+          "y": 350,
+          "type": "file",
+          "path": "assets/INSTALL INSTRUCTIONS - READ FIRST.txt"
+        }
+      ],
+      "window": {
+        "width": 540,
+        "height": 450
+      }
     },
     "win": {
       "target": [

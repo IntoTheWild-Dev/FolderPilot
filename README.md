@@ -9,14 +9,14 @@ Professional folder and file management application for Mac and Windows.
 ### **For Mac Users**
 
 **Apple Silicon (M1/M2/M3/M4):**
-➡️ **[Download for Mac (Apple Silicon)](https://github.com/IntoTheWild-Dev/FolderPilot/releases/download/v1.0.4/FolderPilot-1.0.4-arm64.dmg)**
+➡️ **[Download for Mac (Apple Silicon)](https://github.com/IntoTheWild-Dev/FolderPilot/releases/download/v1.0.5/FolderPilot-1.0.5-arm64.dmg)**
 
 **Intel Macs:**
-➡️ **[Download for Mac (Intel)](https://github.com/IntoTheWild-Dev/FolderPilot/releases/download/v1.0.4/FolderPilot-1.0.4.dmg)**
+➡️ **[Download for Mac (Intel)](https://github.com/IntoTheWild-Dev/FolderPilot/releases/download/v1.0.5/FolderPilot-1.0.5.dmg)**
 
 ### **For Windows Users**
 
-➡️ **[Download for Windows](https://github.com/IntoTheWild-Dev/FolderPilot/releases/download/v1.0.4/FolderPilot-Setup-1.0.4.exe)**
+➡️ **[Download for Windows](https://github.com/IntoTheWild-Dev/FolderPilot/releases/download/v1.0.5/FolderPilot-Setup-1.0.5.exe)**
 
 ---
 
