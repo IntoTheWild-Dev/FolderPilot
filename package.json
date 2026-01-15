@@ -1,6 +1,6 @@
 {
   "name": "folderpilot",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Folder and file management tool",
   "main": "main.js",
   "author": "Your Name",
@@ -18,8 +18,8 @@
     "electron-updater": "^6.7.3"
   },
   "devDependencies": {
-    "electron": "^29.0.0",
-    "electron-builder": "^24.13.1",
+    "electron": "^35.7.5",
+    "electron-builder": "^25.1.8",
     "png-to-ico": "^3.0.1"
   },
   "build": {

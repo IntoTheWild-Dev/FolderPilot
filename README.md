@@ -9,14 +9,14 @@ Professional folder and file management application for Mac and Windows.
 ### **For Mac Users**
 
 **Apple Silicon (M1/M2/M3/M4):**
-➡️ **[Download for Mac (Apple Silicon)](https://github.com/IntoTheWild-Dev/FolderPilot/releases/download/v1.0.0/FolderPilot-1.0.0-arm64.dmg)**
+➡️ **[Download for Mac (Apple Silicon)](https://github.com/IntoTheWild-Dev/FolderPilot/releases/download/v1.0.2/FolderPilot-1.0.2-arm64.dmg)**
 
 **Intel Macs:**
-➡️ **[Download for Mac (Intel)](https://github.com/IntoTheWild-Dev/FolderPilot/releases/download/v1.0.0/FolderPilot-1.0.0.dmg)**
+➡️ **[Download for Mac (Intel)](https://github.com/IntoTheWild-Dev/FolderPilot/releases/download/v1.0.2/FolderPilot-1.0.2.dmg)**
 
 ### **For Windows Users**
 
-➡️ **[Download for Windows](https://github.com/IntoTheWild-Dev/FolderPilot/releases/download/v1.0.0/FolderPilot-Setup-1.0.0.exe)**
+➡️ **[Download for Windows](https://github.com/IntoTheWild-Dev/FolderPilot/releases/download/v1.0.2/FolderPilot-Setup-1.0.2.exe)**
 
 ---
 
@@ -26,13 +26,50 @@ Professional folder and file management application for Mac and Windows.
 1. Download the appropriate DMG file for your Mac
 2. Open the DMG file
 3. Drag FolderPilot to your Applications folder
-4. Launch from Applications
+4. **Important - First Launch:** See "macOS Security Note" below before launching
+5. Launch from Applications
 
 **Windows:**
 1. Download the EXE installer
 2. Run the installer
 3. Follow the installation wizard
 4. Launch from Start menu
+
+---
+
+## macOS Security Note
+
+When you first try to open FolderPilot on macOS, you may see a message saying the app "is damaged and can't be opened" or that it's from an "unidentified developer." This is because the app is not yet signed with an Apple Developer certificate.
+
+### Step 1: Allow the App to Open
+
+**Option A: System Settings (Recommended)**
+1. Go to **System Settings** > **Privacy & Security**
+2. Scroll down to find the message about FolderPilot being blocked
+3. Click **"Open Anyway"**
+
+**Option B: Right-Click to Open**
+1. Right-click (or Control-click) on FolderPilot in your Applications folder
+2. Select "Open" from the menu
+3. Click "Open" in the dialog that appears
+
+**Option C: Terminal Command**
+If the above methods don't work, open Terminal and run:
+```bash
+xattr -cr /Applications/FolderPilot.app
+```
+Then launch the app normally.
+
+### Step 2: Grant Full Disk Access (If Needed)
+
+If FolderPilot cannot access certain folders (Desktop, Documents, Downloads, etc.), you may need to grant Full Disk Access:
+
+1. Go to **System Settings** > **Privacy & Security** > **Full Disk Access**
+2. Click the **+** button
+3. Navigate to **Applications** and select **FolderPilot**
+4. Toggle FolderPilot **on** in the list
+
+**Note:** You only need to do these steps once. After the first successful setup, macOS will remember your choices.
 
 ---
 
