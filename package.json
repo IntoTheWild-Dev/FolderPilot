@@ -1,6 +1,6 @@
 {
   "name": "folderpilot",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Folder and file management tool",
   "main": "main.js",
   "author": "IntoTheWild",
@@ -52,6 +52,7 @@
     ],
     "mac": {
       "category": "public.app-category.productivity",
+      "identity": "-",
       "target": [
         {
           "target": "dmg",
