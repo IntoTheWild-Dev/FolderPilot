@@ -1,9 +1,9 @@
 {
   "name": "folderpilot",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Folder and file management tool",
   "main": "main.js",
-  "author": "Your Name",
+  "author": "IntoTheWild",
   "scripts": {
     "start": "electron .",
     "dev": "NODE_ENV=development electron .",
@@ -25,6 +25,7 @@
   "build": {
     "appId": "com.intothewild.folderpilot",
     "productName": "FolderPilot",
+    "copyright": "Copyright © 2026 IntoTheWild",
     "publish": {
       "provider": "github",
       "owner": "IntoTheWild-Dev",
