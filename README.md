@@ -22,54 +22,42 @@ Professional folder and file management application for Mac and Windows.
 
 ## Installation
 
-**Mac:**
-1. Download the appropriate DMG file for your Mac
-2. Open the DMG file
-3. Drag FolderPilot to your Applications folder
-4. **Important - First Launch:** See "macOS Security Note" below before launching
-5. Launch from Applications
-
-**Windows:**
+### Windows
 1. Download the EXE installer
-2. Run the installer
-3. Follow the installation wizard
-4. Launch from Start menu
+2. Run the installer and follow the wizard
+3. Launch from Start menu
 
----
+### Mac ⚠️ IMPORTANT - READ THIS FIRST
 
-## macOS Security Note
+macOS will show **"FolderPilot is damaged and can't be opened"** - this is normal! This happens because the app is not signed with an Apple Developer certificate ($99/year). Here's how to install:
 
-When you first try to open FolderPilot on macOS, you'll see a message saying the app **"is damaged and can't be opened."** This is normal for apps not signed with an Apple Developer certificate ($99/year).
+**Step 1: Download and move to Applications**
+1. Download the DMG file for your Mac (Apple Silicon or Intel)
+2. Open the DMG and drag FolderPilot to your Applications folder
 
-### How to Install (One-Time Setup)
+**Step 2: Run this command in Terminal (required)**
 
-**After dragging FolderPilot to Applications, open Terminal and run:**
+Open Terminal and paste this command:
 
 ```bash
 xattr -cr /Applications/FolderPilot.app
 ```
 
-**That's it!** Now double-click FolderPilot to open it normally.
+> **How to open Terminal:** Press `Cmd + Space`, type `Terminal`, press Enter. Then paste the command above and press Enter.
 
-<details>
-<summary>📋 How to open Terminal</summary>
+**Step 3: Open the app**
 
-1. Press **Cmd + Space** to open Spotlight
-2. Type **Terminal** and press Enter
-3. Copy and paste the command above, then press Enter
+Double-click FolderPilot in Applications - it will now open normally!
 
-</details>
+**Step 4: Grant Full Disk Access (if needed)**
 
-### Step 2: Grant Full Disk Access (If Needed)
+If FolderPilot can't access certain folders (Desktop, Documents, etc.):
 
-If FolderPilot cannot access certain folders (Desktop, Documents, Downloads, etc.), you may need to grant Full Disk Access:
+1. Go to **System Settings** → **Privacy & Security** → **Full Disk Access**
+2. Click **+** and add **FolderPilot**
+3. Toggle it **on**
 
-1. Go to **System Settings** > **Privacy & Security** > **Full Disk Access**
-2. Click the **+** button
-3. Navigate to **Applications** and select **FolderPilot**
-4. Toggle FolderPilot **on** in the list
-
-**Note:** You only need to do these steps once. After the first successful setup, macOS will remember your choices.
+> ✅ You only need to do these steps once. After setup, macOS remembers your choices.
 
 ---
 
