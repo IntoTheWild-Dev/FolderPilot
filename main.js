@@ -71,7 +71,7 @@ function createWindow() {
       sandbox: false,
       preload: path.join(__dirname, 'preload.js')
     },
-    titleBarStyle: 'hiddenInset', // For macOS
+    titleBarStyle: 'default', // For macOS - ensure window is movable
     frame: true,
     show: false // Don't show until ready
   });
