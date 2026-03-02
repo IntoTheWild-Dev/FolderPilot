@@ -58,9 +58,13 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 700,
+    minWidth: 1200,
+    maxWidth: 1200,
+    minHeight: 700,
+    maxHeight: 700,
     x: windowState.x,
     y: windowState.y,
-    resizable: false,
+    resizable: true,
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
