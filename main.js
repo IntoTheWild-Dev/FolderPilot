@@ -56,10 +56,12 @@ function createWindow() {
   const windowState = getWindowState();
   
   mainWindow = new BrowserWindow({
-    width: windowState.width,
-    height: windowState.height,
-    minWidth: 900,
-    minHeight: 650,
+    width: 1200,
+    height: 700,
+    minWidth: 1200,
+    maxWidth: 1200,
+    minHeight: 700,
+    maxHeight: 700,
     x: windowState.x,
     y: windowState.y,
     resizable: true,
@@ -71,7 +73,7 @@ function createWindow() {
       sandbox: false,
       preload: path.join(__dirname, 'preload.js')
     },
-    titleBarStyle: 'hiddenInset', // For macOS
+    titleBarStyle: 'default', // For macOS - ensure window is movable
     frame: true,
     show: false // Don't show until ready
   });
